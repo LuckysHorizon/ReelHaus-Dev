@@ -28,6 +28,7 @@ export function SiteHeader() {
     { href: "/team", label: "Team", icon: Briefcase },
     { href: "/join", label: "Join Us", icon: Tag },
     { href: "/blog", label: "Blog", icon: FileText },
+    { href: "/admin/login", label: "Admin", icon: UserCog },
   ]
 
   const adminLinks = [
@@ -52,8 +53,8 @@ export function SiteHeader() {
             <span className="font-semibold tracking-wide text-white">ReelHaus</span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-6 text-sm text-gray-300 md:flex">
+          {/* Desktop Nav - Centered */}
+          <nav className="hidden items-center gap-6 text-sm text-gray-300 md:flex absolute left-1/2 transform -translate-x-1/2">
             {isAdmin ? (
               <>
                 {adminLinks.map((l) => (
@@ -86,31 +87,12 @@ export function SiteHeader() {
                     {l.label}
                   </Link>
                 ))}
-                <Link href="/admin/login">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
-                  >
-                    <UserCog className="h-4 w-4 mr-2" />
-                    Admin
-                  </Button>
-                </Link>
               </>
             )}
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex">
-            <Button
-              asChild
-              className="bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-lg px-6 py-2.5
-                         hover:from-red-400 hover:to-red-500 hover:shadow-md hover:scale-[1.02]
-                         transition-all"
-            >
-              <Link href="/admin">Admin</Link>
-            </Button>
-          </div>
+          {/* Spacer for layout balance */}
+          <div className="hidden md:block w-24"></div>
 
           {/* Mobile Nav */}
           <div className="md:hidden">
@@ -181,30 +163,9 @@ export function SiteHeader() {
                                   <span className="text-sm">{l.label}</span>
                                 </Link>
                               ))}
-                              <Link
-                                href="/admin/login"
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
-                              >
-                                <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
-                                  <UserCog className="h-4 w-4" />
-                                </span>
-                                <span className="text-sm">Admin</span>
-                              </Link>
                             </>
                           )}
                         </nav>
-
-                {/* CTA Button at Bottom */}
-                <div className="mt-auto border-t border-gray-800 p-4">
-                  <Button
-                    asChild
-                    className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-lg px-6 py-2.5
-                               hover:from-red-400 hover:to-red-500 hover:shadow-md hover:scale-[1.02]
-                               transition-all"
-                  >
-                    <Link href="/admin">Admin</Link>
-                  </Button>
-                </div>
               </SheetContent>
             </Sheet>
           </div>

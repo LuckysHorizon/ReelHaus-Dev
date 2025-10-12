@@ -19,6 +19,7 @@ type Event = {
   seats_available: number
   cover_image_url?: string
   is_active: boolean
+  features?: string[]
 }
 
 const ACCENT = "#DC2626"
@@ -142,19 +143,13 @@ export function Pricing() {
                 <div className="flex gap-2">
                   <Button
                     asChild
-                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-black shadow transition-[box-shadow,transform,filter] active:translate-y-[1px]"
-                    style={{ backgroundColor: ACCENT }}
+                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500"
                   >
                     <Link href={`/events/${event.id}`}>View Details</Link>
                   </Button>
                   <Button
                     asChild
-                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors"
-                    style={{
-                      backgroundColor: "#0a0a0a",
-                      color: "#ffffff",
-                      border: "1px solid #333",
-                    }}
+                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium border-2 border-red-400 text-red-400 hover:bg-red-500 hover:text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <Link href={`/events/${event.id}/register`}>Register</Link>
                   </Button>
@@ -165,7 +160,7 @@ export function Pricing() {
                 <ul className="grid gap-2">
                   {event.features ? (
                     <>
-                      {event.features.slice(0, 4).map((feature, i) => (
+                      {event.features.slice(0, 4).map((feature: string, i: number) => (
                         <FeatureItem key={i} text={feature} />
                       ))}
                       {event.features.length > 4 && (
