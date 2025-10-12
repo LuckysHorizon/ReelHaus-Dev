@@ -1,24 +1,41 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Only check admin routes, not the login page
-  if (
-    request.nextUrl.pathname === "/admin" ||
-    (request.nextUrl.pathname.startsWith("/admin/") && !request.nextUrl.pathname.startsWith("/admin/login"))
-  ) {
-    // Check for admin session cookie
-    const adminSession = request.cookies.get("admin-session")
+  const response = NextResponse.next()
 
-    if (!adminSession || adminSession.value !== "authenticated") {
-      // Redirect to login if not authenticated
-      return NextResponse.redirect(new URL("/admin/login", request.url))
-    }
+  // Add performance headers for faster loading
+  response.headers.set('X-DNS-Prefetch-Control', 'on')
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'origin-when-cross-origin')
+  
+  // Cache static assets
+  if (request.nextUrl.pathname.startsWith('/_next/static/')) {
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+  }
+  
+  // Cache images
+  if (request.nextUrl.pathname.match(/\.(jpg|jpeg|png|gif|ico|svg|webp)$/)) {
+    response.headers.set('Cache-Control', 'public, max-age=86400')
+  }
+  
+  // Cache API responses for events (with short TTL)
+  if (request.nextUrl.pathname.startsWith('/api/events') && request.method === 'GET') {
+    response.headers.set('Cache-Control', 'public, max-age=300') // 5 minutes
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 }

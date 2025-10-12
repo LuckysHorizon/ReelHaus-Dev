@@ -1,154 +1,139 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
+import { SiteHeader } from "@/components/site-header"
+import { AppverseFooter } from "@/components/appverse-footer"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
+import { Lock, User, Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export default function AdminLogin() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+export default function AdminLoginPage() {
   const router = useRouter()
+  const [formData, setFormData] = useState({
+    username: "",
+    password: ""
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    setLoading(true)
+    setError(null)
 
-    // Simple client-side authentication
-    setTimeout(() => {
-      // Default credentials
-      if (
-        (email === "admin@theskitbit.com" && password === "1234") ||
-        (email === "Addy@theskitbit.com" && password === "1234")
-      ) {
-        // Set a cookie that expires in 24 hours
-        const expiryDate = new Date()
-        expiryDate.setTime(expiryDate.getTime() + 24 * 60 * 60 * 1000)
-        document.cookie = `admin-session=authenticated; path=/; expires=${expiryDate.toUTCString()}`
-        router.push("/admin")
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Store token and redirect to admin dashboard
+        localStorage.setItem('admin_token', data.token)
+        router.push('/admin/dashboard')
       } else {
-        setError("Invalid email or password")
+        setError(data.error || 'Login failed')
       }
-      setIsLoading(false)
-    }, 1000)
+    } catch (error) {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row">
-      {/* Left side - only visible on desktop */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-purple-600 to-blue-600 p-12 flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-lg">SK</span>
-            </div>
-            <span className="text-2xl font-semibold text-white">Skitbit</span>
-          </div>
-          <h1 className="text-4xl font-bold text-white mt-12">Welcome to Skitbit Admin</h1>
-          <p className="text-purple-100 mt-4 max-w-md">
-            Manage your website content, pricing, and settings from one central dashboard.
-          </p>
-        </div>
-        <div className="mt-auto">
-          <Image
-            src="/images/admin-cover.png"
-            alt="Admin Dashboard"
-            width={500}
-            height={300}
-            className="rounded-xl shadow-lg"
-          />
-        </div>
-      </div>
-
-      {/* Right side - login form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
-        {/* Mobile header - only visible on mobile */}
-        <div className="flex md:hidden items-center gap-3 mb-8 w-full">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-black font-bold text-lg">SK</span>
-          </div>
-          <span className="text-2xl font-semibold text-white">Skitbit</span>
-        </div>
-
-        <div className="w-full max-w-md">
+    <main className="min-h-[100dvh] text-white">
+      <SiteHeader />
+      
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white">Sign in to your account</h2>
-            <p className="text-neutral-400 mt-2">Enter your credentials to access the admin panel</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg flex items-center gap-3">
-                <AlertCircle className="h-5 w-5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-neutral-200">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@theskitbit.com"
-                className="bg-[#1a1a1a] border-neutral-800 text-white"
-                required
-              />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-full mb-4">
+              <Lock className="h-8 w-8 text-white" />
             </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-neutral-200">
-                  Password
-                </Label>
-                <button type="button" className="text-sm text-[#C6FF3A] hover:underline">
-                  Forgot password?
-                </button>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-[#1a1a1a] border-neutral-800 text-white"
-                required
-              />
-            </div>
-
-            <Button type="submit" disabled={isLoading} className="w-full bg-[#C6FF3A] text-black hover:bg-[#C6FF3A]/90">
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-neutral-400 text-sm">
-              Need help? Contact{" "}
-              <a href="mailto:support@theskitbit.com" className="text-[#C6FF3A] hover:underline">
-                support@theskitbit.com
-              </a>
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent">
+              Admin Login
+            </h1>
+            <p className="text-gray-400">
+              Access the ReelHaus admin dashboard
             </p>
           </div>
+
+          <Card className="glass-border-enhanced p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <Label htmlFor="username" className="text-red-400">Username</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white pl-10"
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="password" className="text-red-400">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white pl-10 pr-10"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 disabled:opacity-50"
+              >
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Button>
+            </form>
+          </Card>
+
+          <div className="text-center mt-6">
+            <Button asChild variant="outline" className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white">
+              <a href="/">Back to Home</a>
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <AppverseFooter />
+    </main>
   )
 }

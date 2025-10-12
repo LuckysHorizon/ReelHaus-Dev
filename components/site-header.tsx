@@ -9,10 +9,10 @@ import { Menu, Briefcase, Tag, HelpCircle, FileText, Info } from "lucide-react"
 export function SiteHeader() {
   const links = [
     { href: "/", label: "Home", icon: Briefcase },
-    { href: "#pricing", label: "Pricing", icon: Tag },
-    { href: "faq", label: "FAQ", icon: HelpCircle },
-    { href: "#blog", label: "Blog", icon: FileText },
-    { href: "About", label: "About", icon: Info },
+    { href: "/about", label: "About Us", icon: Info },
+    { href: "/team", label: "Team", icon: Briefcase },
+    { href: "/join", label: "Join Us", icon: Tag },
+    { href: "/blog", label: "Blog", icon: FileText },
   ]
 
   return (
@@ -22,13 +22,13 @@ export function SiteHeader() {
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-1.5">
             <Image
-              src="/icons/skitbit-white.svg"
-              alt="Skitbit logo"
+              src="/icons/reelhaus-white.svg"
+              alt="ReelHaus logo"
               width={20}
               height={20}
               className="h-5 w-5"
             />
-            <span className="font-semibold tracking-wide text-white">Skitbit</span>
+            <span className="font-semibold tracking-wide text-white">ReelHaus</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -37,7 +37,7 @@ export function SiteHeader() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="hover:text-purple-300 transition-colors"
+                className="hover:text-red-300 transition-colors"
               >
                 {l.label}
               </Link>
@@ -48,11 +48,11 @@ export function SiteHeader() {
           <div className="hidden md:flex">
             <Button
               asChild
-              className="bg-lime-400 text-black font-medium rounded-lg px-6 py-2.5
-                         hover:bg-lime-300 hover:shadow-md hover:scale-[1.02]
+              className="bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-lg px-6 py-2.5
+                         hover:from-red-400 hover:to-red-500 hover:shadow-md hover:scale-[1.02]
                          transition-all"
             >
-              <Link href="#contact">Chat With Us</Link>
+              <Link href="/admin">Admin</Link>
             </Button>
           </div>
 
@@ -76,13 +76,13 @@ export function SiteHeader() {
                 {/* Brand Header */}
                 <div className="flex items-center gap-1.5 px-4 py-4 border-b border-gray-800">
                   <Image
-                    src="/icons/skitbit-white.svg"
-                    alt="Skitbit logo"
+                    src="/icons/reelhaus-white.svg"
+                    alt="ReelHaus logo"
                     width={24}
                     height={24}
                     className="h-6 w-6"
                   />
-                  <span className="font-semibold tracking-wide text-white text-lg">Skitbit</span>
+                  <span className="font-semibold tracking-wide text-white text-lg">ReelHaus</span>
                 </div>
 
                 {/* Nav Links */}
@@ -91,7 +91,7 @@ export function SiteHeader() {
                     <Link
                       key={l.href}
                       href={l.href}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-purple-300 transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
                         <l.icon className="h-4 w-4" />
@@ -105,11 +105,11 @@ export function SiteHeader() {
                 <div className="mt-auto border-t border-gray-800 p-4">
                   <Button
                     asChild
-                    className="w-full bg-lime-400 text-black font-medium rounded-lg px-6 py-2.5
-                               hover:bg-lime-300 hover:shadow-md hover:scale-[1.02]
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-lg px-6 py-2.5
+                               hover:from-red-400 hover:to-red-500 hover:shadow-md hover:scale-[1.02]
                                transition-all"
                   >
-                    <Link href="https://wa.link/65mf3i">Get a Quote</Link>
+                    <Link href="/admin">Admin</Link>
                   </Button>
                 </div>
               </SheetContent>

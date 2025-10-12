@@ -4,14 +4,15 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import Plasma from "@/components/plasma"
+import { QuickNavigation } from "@/components/quick-navigation"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const metadata: Metadata = {
-  title: "Skitbit | 3D Animation Made Simple, Reliable & Scalable",
+  title: "ReelHaus | Premium Club Events Portal",
   description:
-    "From product launches to full-scale campaigns, Skitbit delivers 3D animation that's fast, consistent, and built to wow your audience.",
-  generator: "v0.app",
+    "Discover and register for exclusive club events. Secure payments, instant QR codes, and seamless event management.",
+  generator: "Next.js",
 }
 
 export default function RootLayout({
@@ -37,7 +38,7 @@ export default function RootLayout({
           {`
             function updateFavicon() {
               const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-              const faviconHref = darkMode ? '/icons/skitbit-white.svg' : '/icons/favicon-dark.svg';
+              const faviconHref = darkMode ? '/icons/reelhaus-white.svg' : '/icons/favicon-dark.svg';
               let link = document.querySelector("link[rel~='icon']");
               if (!link) {
                 link = document.createElement('link');
@@ -73,17 +74,18 @@ export default function RootLayout({
         </Script>
       </head>
       <body>
-        <div className="fixed inset-0 z-0 bg-black">
+        <div className="fixed inset-0 z-0 bg-gradient-to-br from-black via-gray-900 to-black">
           <Plasma
-            color="#8b5cf6"
+            color="#DC2626"
             speed={0.8}
             direction="forward"
             scale={1.5}
-            opacity={0.4}
+            opacity={0.3}
             mouseInteractive={true}
           />
         </div>
         <div className="relative z-10">{children}</div>
+        <QuickNavigation />
       </body>
     </html>
   )

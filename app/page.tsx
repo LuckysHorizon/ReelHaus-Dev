@@ -10,39 +10,23 @@ import Script from "next/script"
 export const dynamic = "force-static"
 
 export default function Page() {
-  // Structured data for pricing
-  const pricingStructuredData = {
+  // Structured data for events
+  const eventsStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebPageElement",
-    "@id": "https://theskitbit.com/#pricing",
-    name: "Pricing Plans",
-    description: "3D Animation pricing plans - Startup, Pro, and Premium packages for all business needs",
-    url: "https://theskitbit.com/#pricing",
+    "@id": "https://reelhaus.com/#events",
+    name: "Event Registration",
+    description: "Premium club events registration with secure payments and instant QR codes",
+    url: "https://reelhaus.com/#events",
     mainEntity: {
-      "@type": "PriceSpecification",
-      name: "3D Animation Services",
-      description: "Professional 3D animation services with three pricing tiers",
+      "@type": "Service",
+      name: "Event Registration Service",
+      description: "Secure event registration with Razorpay payments and QR code generation",
       offers: [
         {
           "@type": "Offer",
-          name: "Startup Plan",
-          price: "299",
-          priceCurrency: "USD",
-          description: "Up to 15s 3D Animation with 2 revisions",
-        },
-        {
-          "@type": "Offer",
-          name: "Pro Plan",
-          price: "699",
-          priceCurrency: "USD",
-          description: "Up to 25s 3D Animation with 4 revisions",
-        },
-        {
-          "@type": "Offer",
-          name: "Premium Plan",
-          price: "2049",
-          priceCurrency: "USD",
-          description: "40-60s 3D Animation with unlimited revisions",
+          name: "Event Registration",
+          description: "Register for exclusive club events with instant confirmation",
         },
       ],
     },
@@ -52,28 +36,26 @@ export default function Page() {
   const pageStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "@id": "https://theskitbit.com/",
-    name: "Skitbit | 3D Animation Made Simple, Reliable & Scalable",
+    "@id": "https://reelhaus.com/",
+    name: "ReelHaus | Premium Club Events Portal",
     description:
-      "From product launches to full-scale campaigns, Skitbit delivers 3D animation that’s fast, consistent, and built to wow your audience.",
-    url: "https://theskitbit.com/",
+      "Discover and register for exclusive club events. Secure payments, instant QR codes, and seamless event management.",
+    url: "https://reelhaus.com/",
     mainEntity: {
       "@type": "Organization",
-      name: "Skitbit",
-      url: "https://theskitbit.com",
+      name: "ReelHaus",
+      url: "https://reelhaus.com",
       sameAs: [
-        "https://twitter.com/theskitbit",
-        "https://www.youtube.com/@skitbitinternational",
-        "https://instagram.com/theskitbit",
-        "https://threads.com/theskitbit",
+        "https://twitter.com/reelhaus",
+        "https://instagram.com/reelhaus",
       ],
     },
     hasPart: [
       {
         "@type": "WebPageElement",
-        "@id": "https://theskitbit.com/#pricing",
-        name: "Pricing Section",
-        url: "https://theskitbit.com/#pricing",
+        "@id": "https://reelhaus.com/#events",
+        name: "Events Section",
+        url: "https://reelhaus.com/#events",
       },
     ],
   }
@@ -91,11 +73,11 @@ export default function Page() {
 
       {/* JSON-LD structured data */}
       <Script
-        id="pricing-structured-data"
+        id="events-structured-data"
         type="application/ld+json"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(pricingStructuredData),
+          __html: JSON.stringify(eventsStructuredData),
         }}
       />
 

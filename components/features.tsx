@@ -11,8 +11,8 @@ interface FeaturesContent {
 }
 
 const defaultContent: FeaturesContent = {
-  title: "What makes us the best studio for you.",
-  subtitle: "Discover our unique approach to 3D animation",
+  title: "What makes ReelHaus events extraordinary.",
+  subtitle: "Discover our unique approach to club events",
 }
 
 export function Features() {
@@ -20,7 +20,7 @@ export function Features() {
 
   useEffect(() => {
     // Load content from localStorage
-    const savedContent = localStorage.getItem("skitbit-content")
+    const savedContent = localStorage.getItem("reelhaus-content")
     if (savedContent) {
       try {
         const parsed = JSON.parse(savedContent)
@@ -40,18 +40,18 @@ export function Features() {
       </h2>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Adaptability Card - Hidden on mobile */}
+        {/* Premium Experience Card - Hidden on mobile */}
         <Card className="hidden md:block liquid-glass border border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader>
-            <p className="text-[11px] tracking-widest text-neutral-400">ADAPTABILITY</p>
-            <CardTitle className="mt-1 text-xl text-white">Make the experience truly intuitive</CardTitle>
+            <p className="text-[11px] tracking-widest text-neutral-400">PREMIUM EXPERIENCE</p>
+            <CardTitle className="mt-1 text-xl text-white">Curated events with attention to every detail</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/10">
                 <Image
                   src="/images/intuitive-1.png"
-                  alt="Close-up smartphone camera module on textured leather back"
+                  alt="Premium club event atmosphere"
                   fill
                   className="object-cover"
                   sizes="(min-width: 768px) 240px, 45vw"
@@ -61,7 +61,7 @@ export function Features() {
               <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/10">
                 <Image
                   src="/images/intuitive-2.png"
-                  alt="Hand gripping textured phone back — macro detail"
+                  alt="Exclusive venue setup"
                   fill
                   className="object-cover"
                   sizes="(min-width: 768px) 240px, 45vw"
@@ -72,20 +72,20 @@ export function Features() {
           </CardContent>
         </Card>
 
-        {/* Client Love Card - Always visible */}
+        {/* Member Satisfaction Card - Always visible */}
         <Card className="liquid-glass border border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader>
-            <p className="text-[11px] tracking-widest text-neutral-400">CLIENT LOVE</p>
+            <p className="text-[11px] tracking-widest text-neutral-400">MEMBER SATISFACTION</p>
             <CardTitle className="mt-1 text-xl text-white">
-              Their work didn't just look good, it moved the needle — our audience felt the difference instantly.
+              Our members consistently rate our events as unforgettable experiences that exceed expectations.
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-6 flex items-end gap-4">
-              <div className="text-5xl font-bold text-lime-300">4.9</div>
+              <div className="text-5xl font-bold text-red-300">4.9</div>
               <div className="flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-lime-300 text-lime-300" />
+                  <Star key={i} className="h-5 w-5 fill-red-300 text-red-300" />
                 ))}
               </div>
             </div>
@@ -94,14 +94,14 @@ export function Features() {
                 src={"/images/top-rated-1.png"}
                 width={280}
                 height={160}
-                alt="Product sketch concepts of backpack on paper"
+                alt="Happy members at ReelHaus event"
                 className="h-full w-full rounded-xl border border-white/10 object-cover"
               />
               <Image
                 src={"/images/top-rated-2.png"}
                 width={280}
                 height={160}
-                alt="Backpacks on stage with Smartpack PRO lighting"
+                alt="Memorable moments at club event"
                 className="h-full w-full rounded-xl border border-white/10 object-cover"
               />
             </div>

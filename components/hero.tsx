@@ -4,9 +4,9 @@ import LazyVideo from "./lazy-video"
 
 export function Hero() {
   const buttonNew = (
-    <Button asChild className="rounded-full bg-lime-400 px-6 text-black hover:bg-lime-300">
-      <a href="https://wa.link/rc25na" target="_blank" rel="noopener noreferrer">
-        Chat With Us
+    <Button asChild className="rounded-full bg-gradient-to-r from-red-500 to-red-600 px-6 text-white hover:from-red-400 hover:to-red-500">
+      <a href="#events" target="_blank" rel="noopener noreferrer">
+        Explore Events
       </a>
     </Button>
   )
@@ -16,13 +16,13 @@ export function Hero() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-center py-14 sm:py-20">
           <div className="mb-5 flex items-center gap-2">
-            <Image src="/icons/skitbit-white.svg" alt="Skitbit logo" width={32} height={32} className="h-8 w-8" />
-            <p className="text-sm uppercase tracking-[0.25em] text-lime-300/80">skitbit</p>
+            <Image src="/icons/reelhaus-white.svg" alt="ReelHaus logo" width={32} height={32} className="h-8 w-8" />
+            <p className="text-sm uppercase tracking-[0.25em] text-red-300/80">reelhaus</p>
           </div>
           <h1 className="mt-3 text-center text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-            <span className="block">HIGH-IMPACT</span>
-            <span className="block text-lime-300 drop-shadow-[0_0_20px_rgba(132,204,22,0.35)]">3D ANIMATION</span>
-            <span className="block">FOR BRANDS</span>
+            <span className="block">EXCLUSIVE</span>
+            <span className="block text-red-300 drop-shadow-[0_0_20px_rgba(220,38,38,0.35)]">CLUB EVENTS</span>
+            <span className="block">FOR MEMBERS</span>
           </h1>
           <div className="mt-6">{buttonNew}</div>
 
@@ -78,8 +78,8 @@ function PhoneCard({
           <div className="space-y-1 px-1">
             <div className="text-3xl font-bold leading-snug text-white/90">{title}</div>
             <p className="text-xs text-white/70">{sub}</p>
-            <div className="mt-3 inline-flex items-center rounded-full bg-black/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-lime-300">
-              {tone === "calm" ? "skitbit app" : tone}
+            <div className="mt-3 inline-flex items-center rounded-full bg-black/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-red-300">
+              {tone === "calm" ? "reelhaus app" : tone}
             </div>
           </div>
         </div>
@@ -90,37 +90,37 @@ function PhoneCard({
 
 const phoneData = [
   {
-    title: "Conversions",
-    sub: "Turn clicks into paying customers.",
-    tone: "results",
-    gradient: "from-[#0b0b0b] via-[#0f172a] to-[#020617]",
+    title: "Premium",
+    sub: "Exclusive events for members only.",
+    tone: "premium",
+    gradient: "from-[#0b0b0b] via-[#1f2937] to-[#0b1220]",
     videoSrc:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/A%20new%20chapter%20in%20the%20story%20of%20success.__Introducing%20the%20new%20TAG%20Heuer%20Carrera%20Day-Date%20collection%2C%20reimagined%20with%20bold%20colors%2C%20refined%20finishes%2C%20and%20upgraded%20functionality%20to%20keep%20you%20focused%20on%20your%20goals.%20__Six%20-nDNoRQyFaZ8oaaoty4XaQz8W8E5bqA.mp4",
+      "/videos/premium.mp4",
   },
   {
-    title: "Speed",
-    sub: "Launch in days, not weeks.",
-    tone: "speed",
+    title: "Secure",
+    sub: "Safe payments with instant confirmation.",
+    tone: "secure",
     gradient: "from-[#0b1a0b] via-[#052e16] to-[#022c22]",
   },
   {
-    title: "Social-Ready",
-    sub: "Made for IG, TikTok, and Meta.",
+    title: "Social",
+    sub: "Connect with like-minded individuals.",
     tone: "social",
     gradient: "from-[#001028] via-[#0b355e] to-[#052e5e]",
     videoSrc:
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Timeline%201-Ku3Y2Hgaw8hCiFEFg1ELtYp631rSzR.webm",
   },
   {
-    title: "Standout",
-    sub: "Be the product no one scrolls past.",
-    tone: "standout",
+    title: "Instant",
+    sub: "QR codes delivered immediately.",
+    tone: "instant",
     gradient: "from-[#0b0b0b] via-[#1f2937] to-[#0b1220]",
   },
   {
-    title: "Premium",
-    sub: "Look like the market leader.",
-    tone: "premium",
+    title: "Memorable",
+    sub: "Create lasting experiences together.",
+    tone: "memorable",
     gradient: "from-[#0b0b0b] via-[#111827] to-[#052e16]",
   },
 ]
