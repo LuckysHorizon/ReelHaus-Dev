@@ -7,6 +7,19 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { CheckCircle2, Calendar, MapPin, Users } from "lucide-react"
 
 type Feature = { text: string; muted?: boolean }
+type Event = {
+  id: string
+  title: string
+  description: string
+  start_datetime: string
+  end_datetime: string
+  price_cents: number
+  currency: string
+  seats_total: number
+  seats_available: number
+  cover_image_url?: string
+  is_active: boolean
+}
 
 const ACCENT = "#DC2626"
 
@@ -19,87 +32,28 @@ function FeatureItem({ text, muted = false }: Feature) {
   )
 }
 
-// Mock events data - in production this would come from the API
-const mockEvents = [
-  {
-    id: "1",
-    title: "Neon Nights",
-    description: "An electrifying night of electronic music and neon lights",
-    date: "2024-02-15",
-    time: "21:00",
-    venue: "Club Aurora",
-    price: 1500,
-    currency: "INR",
-    seats_available: 45,
-    seats_total: 100,
-    cover_image_url: "/placeholder.jpg",
-    features: [
-      "Premium DJ lineup",
-      "Neon light show",
-      "VIP bottle service",
-      "Complimentary welcome drink",
-      "Professional photography",
-      "Secure parking"
-    ]
-  },
-  {
-    id: "2", 
-    title: "Sunset Sessions",
-    description: "Chill vibes and sunset views with acoustic performances",
-    date: "2024-02-20",
-    time: "18:00",
-    venue: "Rooftop Lounge",
-    price: 800,
-    currency: "INR",
-    seats_available: 25,
-    seats_total: 50,
-    cover_image_url: "/placeholder.jpg",
-    features: [
-      "Live acoustic performances",
-      "Sunset rooftop views",
-      "Craft cocktails",
-      "Artisan food menu",
-      "Intimate setting",
-      "Free parking"
-    ]
-  },
-  {
-    id: "3",
-    title: "VIP Experience",
-    description: "Exclusive members-only event with luxury amenities",
-    date: "2024-02-25",
-    time: "20:00",
-    venue: "Private Venue",
-    price: 5000,
-    currency: "INR",
-    seats_available: 15,
-    seats_total: 30,
-    cover_image_url: "/placeholder.jpg",
-    features: [
-      "Exclusive venue access",
-      "Premium open bar",
-      "Gourmet dining",
-      "Personal concierge",
-      "Luxury transportation",
-      "Gift bag included"
-    ]
-  }
-]
+// No mock data - only real events from API
 
 export function Pricing() {
-  const [events, setEvents] = useState(mockEvents)
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // In production, fetch from API
+    // Fetch events from API
     const fetchEvents = async () => {
       try {
-        // const response = await fetch('/api/events')
-        // const data = await response.json()
-        // setEvents(data.events)
-        setLoading(false)
+        const response = await fetch('/api/events')
+        if (response.ok) {
+          const data = await response.json()
+          setEvents(data.events || [])
+        } else {
+          console.error('Failed to fetch events')
+          setEvents([]) // No fallback - show empty state
+        }
       } catch (error) {
         console.error('Error fetching events:', error)
+        setEvents([]) // No fallback - show empty state
+      } finally {
         setLoading(false)
       }
     }
@@ -137,33 +91,39 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {events.map((event) => (
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {events.length === 0 ? (
+            <div className="col-span-full text-center py-16">
+              <h3 className="text-2xl font-semibold text-gray-400 mb-4">No Events Available</h3>
+              <p className="text-gray-500">Check back later for new events!</p>
+            </div>
+          ) : (
+            events.map((event) => (
             <Card
               key={event.id}
-              className="relative overflow-hidden rounded-2xl liquid-glass shadow-[0_12px_40px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-105"
+              className="relative overflow-hidden rounded-2xl liquid-glass shadow-[0_12px_40px_rgba(0,0,0,0.3)] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               <div className="relative h-48 overflow-hidden">
                 <img 
-                  src={event.cover_image_url} 
-                  alt={event.title}
+                  src={event.cover_image_url || '/placeholder.jpg'} 
+                  alt={event.title || 'Event'}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-yellow-300">
-                  {event.seats_available} seats left
+                  {event.seats_available || 0} seats left
                 </div>
               </div>
 
               <CardHeader className="space-y-3 pb-4">
                 <div className="text-sm font-semibold text-neutral-200">
-                  {event.title}
+                  {event.title || 'Untitled Event'}
                 </div>
                 <p className="text-sm text-neutral-400 line-clamp-2">
-                  {event.description}
+                  {event.description || 'No description available'}
                 </p>
                 <div className="flex items-end gap-2 text-neutral-100">
                   <div className="text-xl font-bold tracking-tight">
-                    ₹{event.price}
+                    ₹{((event.price_cents || 0) / 100).toLocaleString('en-IN')}
                   </div>
                   <span className="pb-0.5 text-[11px] text-neutral-400">per person</span>
                 </div>
@@ -171,11 +131,11 @@ export function Pricing() {
                 <div className="flex items-center gap-4 text-xs text-neutral-400">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(event.date).toLocaleDateString()}
+                    {event.start_datetime ? new Date(event.start_datetime).toLocaleDateString() : 'TBD'}
                   </div>
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {event.venue}
+                    <Users className="h-3 w-3" />
+                    {(event.seats_total || 0) - (event.seats_available || 0)} / {event.seats_total || 0} sold
                   </div>
                 </div>
 
@@ -203,17 +163,30 @@ export function Pricing() {
 
               <CardContent className="pt-0">
                 <ul className="grid gap-2">
-                  {event.features.slice(0, 4).map((feature, i) => (
-                    <FeatureItem key={i} text={feature} />
-                  ))}
-                  {event.features.length > 4 && (
-                    <FeatureItem text={`+${event.features.length - 4} more features`} muted />
+                  {event.features ? (
+                    <>
+                      {event.features.slice(0, 4).map((feature, i) => (
+                        <FeatureItem key={i} text={feature} />
+                      ))}
+                      {event.features.length > 4 && (
+                        <FeatureItem text={`+${event.features.length - 4} more features`} muted />
+                      )}
+                    </>
+                  ) : (
+                    // Default features for real API events
+                    <>
+                      <FeatureItem text="Secure online registration" />
+                      <FeatureItem text="Instant confirmation" />
+                      <FeatureItem text="QR code tickets" />
+                      <FeatureItem text="24/7 customer support" />
+                    </>
                   )}
                 </ul>
               </CardContent>
               <CardFooter />
             </Card>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="mt-12 text-center">

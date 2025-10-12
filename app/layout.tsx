@@ -86,6 +86,7 @@ export default function RootLayout({
         </div>
         <div className="relative z-10">{children}</div>
         <QuickNavigation />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
   )

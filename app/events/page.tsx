@@ -1,3 +1,7 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import Head from "next/head"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
@@ -6,111 +10,72 @@ import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Users, Clock } from "lucide-react"
 import Link from "next/link"
 
-export const metadata = {
-  title: "Events | ReelHaus",
-  description: "Discover and register for exclusive ReelHaus club events and experiences.",
+type Event = {
+  id: string
+  title: string
+  description: string
+  start_datetime: string
+  end_datetime: string
+  price_cents: number
+  currency: string
+  seats_total: number
+  seats_available: number
+  cover_image_url?: string
+  is_active: boolean
 }
 
-// Mock events data - in production this would come from the API
-const mockEvents = [
-  {
-    id: "1",
-    title: "Neon Nights",
-    description: "An electrifying night of electronic music and neon lights that will transport you to another dimension.",
-    date: "2024-02-15",
-    time: "21:00",
-    venue: "Club Aurora",
-    price: 1500,
-    currency: "INR",
-    seats_available: 45,
-    seats_total: 100,
-    cover_image_url: "/placeholder.jpg",
-    category: "Electronic",
-    duration: "4 hours"
-  },
-  {
-    id: "2", 
-    title: "Sunset Sessions",
-    description: "Chill vibes and sunset views with acoustic performances in an intimate rooftop setting.",
-    date: "2024-02-20",
-    time: "18:00",
-    venue: "Rooftop Lounge",
-    price: 800,
-    currency: "INR",
-    seats_available: 25,
-    seats_total: 50,
-    cover_image_url: "/placeholder.jpg",
-    category: "Acoustic",
-    duration: "3 hours"
-  },
-  {
-    id: "3",
-    title: "VIP Experience",
-    description: "Exclusive members-only event with luxury amenities and premium service throughout the evening.",
-    date: "2024-02-25",
-    time: "20:00",
-    venue: "Private Venue",
-    price: 5000,
-    currency: "INR",
-    seats_available: 15,
-    seats_total: 30,
-    cover_image_url: "/placeholder.jpg",
-    category: "VIP",
-    duration: "5 hours"
-  },
-  {
-    id: "4",
-    title: "Jazz & Wine",
-    description: "Sophisticated evening of live jazz music paired with premium wine selections.",
-    date: "2024-03-01",
-    time: "19:30",
-    venue: "Wine Bar",
-    price: 2000,
-    currency: "INR",
-    seats_available: 30,
-    seats_total: 60,
-    cover_image_url: "/placeholder.jpg",
-    category: "Jazz",
-    duration: "3 hours"
-  },
-  {
-    id: "5",
-    title: "Tech House Night",
-    description: "Cutting-edge tech house beats with immersive visual experiences and state-of-the-art sound.",
-    date: "2024-03-05",
-    time: "22:00",
-    venue: "Warehouse District",
-    price: 1200,
-    currency: "INR",
-    seats_available: 80,
-    seats_total: 150,
-    cover_image_url: "/placeholder.jpg",
-    category: "Tech House",
-    duration: "6 hours"
-  },
-  {
-    id: "6",
-    title: "Poolside Chill",
-    description: "Relaxed poolside vibes with tropical cocktails and ambient music under the stars.",
-    date: "2024-03-10",
-    time: "17:00",
-    venue: "Resort Pool",
-    price: 1000,
-    currency: "INR",
-    seats_available: 40,
-    seats_total: 80,
-    cover_image_url: "/placeholder.jpg",
-    category: "Chill",
-    duration: "4 hours"
-  }
-]
+// Metadata removed - cannot export from client component
 
+// No mock data - only real events from API
 const categories = ["All", "Electronic", "Acoustic", "VIP", "Jazz", "Tech House", "Chill"]
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events')
+        if (response.ok) {
+          const data = await response.json()
+          setEvents(data.events || [])
+        } else {
+          console.error('Failed to fetch events')
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [])
+
+  if (loading) {
+    return (
+      <main className="min-h-[100dvh] text-white">
+        <SiteHeader />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading events...</p>
+          </div>
+        </div>
+        <AppverseFooter />
+      </main>
+    )
+  }
+
   return (
-    <main className="min-h-[100dvh] text-white">
-      <SiteHeader />
+    <>
+      <Head>
+        <title>Events | ReelHaus</title>
+        <meta name="description" content="Discover and register for exclusive ReelHaus club events and experiences." />
+      </Head>
+      <main className="min-h-[100dvh] text-white">
+        <SiteHeader />
       
       {/* Hero Section */}
       <section className="relative py-20 px-4">
@@ -148,9 +113,15 @@ export default function EventsPage() {
       {/* Events Grid */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockEvents.map((event) => (
-              <Card key={event.id} className="glass-border-enhanced overflow-hidden hover:scale-105 transition-transform group">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.length === 0 ? (
+              <div className="col-span-full text-center py-16">
+                <h3 className="text-2xl font-semibold text-gray-400 mb-4">No Events Available</h3>
+                <p className="text-gray-500">Check back later for new events!</p>
+              </div>
+            ) : (
+              events.map((event) => (
+              <Card key={event.id} className="glass-border-enhanced overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
                 <div className="relative h-48 overflow-hidden">
                   <img 
                     src={event.cover_image_url} 
@@ -162,7 +133,7 @@ export default function EventsPage() {
                   </div>
                   <div className="absolute top-4 left-4">
                     <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black">
-                      {event.category}
+                      Event
                     </Badge>
                   </div>
                 </div>
@@ -174,7 +145,7 @@ export default function EventsPage() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Calendar className="h-4 w-4" />
-                      {new Date(event.date).toLocaleDateString('en-US', { 
+                      {new Date(event.start_datetime).toLocaleDateString('en-US', { 
                         weekday: 'short', 
                         month: 'short', 
                         day: 'numeric' 
@@ -182,11 +153,10 @@ export default function EventsPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Clock className="h-4 w-4" />
-                      {event.time} • {event.duration}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <MapPin className="h-4 w-4" />
-                      {event.venue}
+                      {new Date(event.start_datetime).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Users className="h-4 w-4" />
@@ -196,7 +166,7 @@ export default function EventsPage() {
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-2xl font-bold text-yellow-400">
-                      ₹{event.price}
+                      ₹{(event.price_cents / 100).toLocaleString('en-IN')}
                     </div>
                     <div className="text-sm text-gray-400">per person</div>
                   </div>
@@ -222,7 +192,8 @@ export default function EventsPage() {
                   </div>
                 </div>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -249,5 +220,6 @@ export default function EventsPage() {
 
       <AppverseFooter />
     </main>
+    </>
   )
 }

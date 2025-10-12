@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { ImageUpload } from "@/components/image-upload"
 import { 
   Calendar, 
   Users, 
@@ -46,9 +47,13 @@ export default function AdminEventsPage() {
   const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [exporting, setExporting] = useState<string | null>(null)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -56,6 +61,7 @@ export default function AdminEventsPage() {
     start_datetime: '',
     end_datetime: '',
     seats_total: 0,
+    seats_available: 0,
     price_cents: 0,
     currency: 'INR',
     is_active: true
@@ -92,10 +98,40 @@ export default function AdminEventsPage() {
     }
   }
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required'
+    }
+    
+    if (formData.seats_total < 0) {
+      errors.seats_total = 'Seats must be 0 or greater'
+    }
+    
+    if (formData.price_cents < 0) {
+      errors.price_cents = 'Price must be 0 or greater'
+    }
+    
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = getAdminToken()
     if (!token) return
+
+    setSaving(true)
+    setError(null)
+    setFormErrors({})
+
+    // Validate form
+    if (!validateForm()) {
+      setError('Please fix the form errors below')
+      setSaving(false)
+      return
+    }
 
     try {
       const url = editingEvent 
@@ -104,24 +140,61 @@ export default function AdminEventsPage() {
       
       const method = editingEvent ? 'PUT' : 'POST'
       
+      // For new events, set seats_available = seats_total
+      const submitData = editingEvent 
+        ? {
+            ...formData,
+            seats_total: Number(formData.seats_total),
+            seats_available: Number(formData.seats_available),
+            price_cents: Number(formData.price_cents),
+            is_active: Boolean(formData.is_active)
+          }
+        : { 
+            ...formData, 
+            seats_available: Number(formData.seats_total),
+            seats_total: Number(formData.seats_total),
+            price_cents: Number(formData.price_cents),
+            is_active: Boolean(formData.is_active)
+          }
+      
+      console.log('Sending data:', JSON.stringify(submitData, null, 2))
+      console.log('Data types:', Object.entries(submitData).map(([key, value]) => `${key}: ${typeof value} (${value})`))
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       })
 
       if (response.ok) {
         await fetchEvents(token)
         resetForm()
-        alert(editingEvent ? 'Event updated successfully!' : 'Event created successfully!')
+        // Show success message with better UI
+        const successMessage = editingEvent ? 'Event updated successfully!' : 'Event created successfully!'
+        setError(null)
+        setSuccess(successMessage)
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000)
       } else {
-        alert('Failed to save event')
+        const errorData = await response.json()
+        console.error('API Error:', errorData)
+        
+        if (errorData.validationErrors) {
+          const validationMessages = errorData.validationErrors.map((err: any) => 
+            `${err.path.join('.')}: ${err.message}`
+          ).join(', ')
+          setError(`Validation failed: ${validationMessages}`)
+        } else {
+          setError(`${errorData.error || 'Failed to save event'}${errorData.details ? ` - ${errorData.details}` : ''}`)
+        }
       }
     } catch (error) {
-      alert('Network error')
+      setError('Network error. Please try again.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -134,6 +207,7 @@ export default function AdminEventsPage() {
       start_datetime: event.start_datetime ? new Date(event.start_datetime).toISOString().slice(0, 16) : '',
       end_datetime: event.end_datetime ? new Date(event.end_datetime).toISOString().slice(0, 16) : '',
       seats_total: event.seats_total,
+      seats_available: event.seats_available,
       price_cents: event.price_cents,
       currency: event.currency,
       is_active: event.is_active
@@ -174,12 +248,49 @@ export default function AdminEventsPage() {
       start_datetime: '',
       end_datetime: '',
       seats_total: 0,
+      seats_available: 0,
       price_cents: 0,
       currency: 'INR',
       is_active: true
     })
     setEditingEvent(null)
     setShowForm(false)
+  }
+
+  // Debug functions removed for production
+
+  const handleExportRegistrations = async (eventId: string) => {
+    const token = getAdminToken()
+    if (!token) return
+
+    setExporting(eventId)
+    try {
+      const response = await fetch(`/api/admin/export/registrations?eventId=${eventId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `registrations-${eventId}-${new Date().toISOString().split('T')[0]}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        setSuccess('Excel file downloaded successfully!')
+        setTimeout(() => setSuccess(null), 3000)
+      } else {
+        setError('Failed to export registrations')
+      }
+    } catch (error) {
+      setError('Network error during export')
+    } finally {
+      setExporting(null)
+    }
   }
 
   if (loading) {
@@ -220,7 +331,7 @@ export default function AdminEventsPage() {
               <p className="text-gray-400">Create, edit, and manage your events</p>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowForm(true)}
             className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500"
           >
@@ -248,17 +359,44 @@ export default function AdminEventsPage() {
                   </Button>
                 </div>
 
+                {error && (
+                  <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
+                    <p className="text-red-400 text-sm">{error}</p>
+                  </div>
+                )}
+
+                {success && (
+                  <div className="bg-green-900/20 border border-green-500 rounded-lg p-4 mb-6">
+                    <p className="text-green-400 text-sm">{success}</p>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <Label htmlFor="title" className="text-red-400">Event Title *</Label>
+                      <Label htmlFor="title" className="text-red-400">
+                        Event Title <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="title"
                         value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, title: e.target.value }))
+                          if (formErrors.title) {
+                            setFormErrors(prev => ({ ...prev, title: '' }))
+                          }
+                        }}
+                        className={`bg-gray-900/50 text-white ${
+                          formErrors.title 
+                            ? 'border-red-500 focus:border-red-400' 
+                            : 'border-gray-700 focus:border-red-400'
+                        }`}
+                        placeholder="Enter event title"
                         required
                       />
+                      {formErrors.title && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.title}</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="currency" className="text-red-400">Currency</Label>
@@ -286,17 +424,11 @@ export default function AdminEventsPage() {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="cover_image_url" className="text-red-400">Cover Image URL</Label>
-                    <Input
-                      id="cover_image_url"
-                      type="url"
-                      value={formData.cover_image_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cover_image_url: e.target.value }))}
-                      className="bg-gray-900/50 border-gray-700 text-white"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
+                  <ImageUpload
+                    value={formData.cover_image_url}
+                    onChange={(url) => setFormData(prev => ({ ...prev, cover_image_url: url }))}
+                    onError={(error) => setError(error)}
+                  />
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -325,30 +457,54 @@ export default function AdminEventsPage() {
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <Label htmlFor="seats_total" className="text-red-400">Total Seats *</Label>
+                      <Label htmlFor="seats_total" className="text-red-400">
+                        Total Seats <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="seats_total"
                         type="number"
                         min="1"
                         value={formData.seats_total}
                         onChange={(e) => setFormData(prev => ({ ...prev, seats_total: parseInt(e.target.value) || 0 }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
+                        className={`bg-gray-900/50 text-white ${
+                          formErrors.seats_total 
+                            ? 'border-red-500 focus:border-red-400' 
+                            : 'border-gray-700 focus:border-red-400'
+                        }`}
+                        placeholder="Enter total seats"
                         required
                       />
+                      {formErrors.seats_total && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.seats_total}</p>
+                      )}
                     </div>
                     <div>
-                      <Label htmlFor="price_cents" className="text-red-400">Price (in cents) *</Label>
-                      <Input
-                        id="price_cents"
-                        type="number"
-                        min="0"
-                        value={formData.price_cents}
-                        onChange={(e) => setFormData(prev => ({ ...prev, price_cents: parseInt(e.target.value) || 0 }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        required
-                      />
+                      <Label htmlFor="price_cents" className="text-red-400">
+                        Price (₹) <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₹</span>
+                        <Input
+                          id="price_cents"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={formData.price_cents / 100}
+                          onChange={(e) => setFormData(prev => ({ ...prev, price_cents: Math.round((parseFloat(e.target.value) || 0) * 100) }))}
+                          className={`bg-gray-900/50 text-white pl-8 ${
+                            formErrors.price_cents 
+                              ? 'border-red-500 focus:border-red-400' 
+                              : 'border-gray-700 focus:border-red-400'
+                          }`}
+                          placeholder="1500"
+                          required
+                        />
+                      </div>
+                      {formErrors.price_cents && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.price_cents}</p>
+                      )}
                       <p className="text-sm text-gray-400 mt-1">
-                        Current: ₹{formData.price_cents / 100}
+                        Enter price in rupees (e.g., 1500 for ₹1,500)
                       </p>
                     </div>
                   </div>
@@ -367,10 +523,11 @@ export default function AdminEventsPage() {
                   <div className="flex gap-4 pt-4">
                     <Button 
                       type="submit"
-                      className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500"
+                      disabled={saving}
+                      className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500 disabled:opacity-50"
                     >
-                      <Save className="h-4 w-4 mr-2" />
-                      {editingEvent ? 'Update Event' : 'Create Event'}
+                      <Save className={`h-4 w-4 mr-2 ${saving ? 'animate-spin' : ''}`} />
+                      {saving ? 'Saving...' : (editingEvent ? 'Update Event' : 'Create Event')}
                     </Button>
                     <Button 
                       type="button"
@@ -421,7 +578,7 @@ export default function AdminEventsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-red-400" />
-                    <span>₹{event.price_cents / 100}</span>
+                    <span>₹{(event.price_cents / 100).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
@@ -434,6 +591,16 @@ export default function AdminEventsPage() {
                   >
                     <Edit className="h-3 w-3 mr-1" />
                     Edit
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    disabled={exporting === event.id}
+                    className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white disabled:opacity-50"
+                    onClick={() => handleExportRegistrations(event.id)}
+                    title="Export Registrations"
+                  >
+                    <Download className={`h-3 w-3 ${exporting === event.id ? 'animate-spin' : ''}`} />
                   </Button>
                   <Button 
                     size="sm" 

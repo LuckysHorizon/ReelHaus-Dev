@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
@@ -8,338 +9,348 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, MapPin, Users, Clock, CheckCircle2, Plus, Minus } from "lucide-react"
+import { Calendar, Clock, Users, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-// Mock event data
-const mockEvent = {
-  id: "1",
-  title: "Neon Nights",
-  description: "An electrifying night of electronic music and neon lights",
-  date: "2024-02-15",
-  time: "21:00",
-  venue: "Club Aurora",
-  price: 1500,
-  currency: "INR",
-  seats_available: 45,
-  seats_total: 100,
-  cover_image_url: "/placeholder.jpg",
-  category: "Electronic",
-  duration: "4 hours"
+type Event = {
+  id: string
+  title: string
+  description: string
+  start_datetime: string
+  end_datetime: string
+  price_cents: number
+  currency: string
+  seats_total: number
+  seats_available: number
+  cover_image_url?: string
+  is_active: boolean
 }
 
-interface TicketDetail {
+type RegistrationForm = {
   name: string
+  email: string
+  phone: string
   roll_no: string
-  email?: string
+  tickets: number
+  ticket_details: Array<{
+    name: string
+    roll_no: string
+    email: string
+  }>
 }
 
-export default function EventRegistrationPage({ params }: { params: { id: string } }) {
-  const event = mockEvent // In production, fetch based on params.id
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    roll_no: "",
-    tickets: 1
+export default function EventRegistrationPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [event, setEvent] = useState<Event | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState<RegistrationForm>({
+    name: '',
+    email: '',
+    phone: '',
+    roll_no: '',
+    tickets: 1,
+    ticket_details: [{ name: '', roll_no: '', email: '' }]
   })
-  
-  const [ticketDetails, setTicketDetails] = useState<TicketDetail[]>([
-    { name: "", roll_no: "", email: "" }
-  ])
-  
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.name.trim()) newErrors.name = "Name is required"
-    if (!formData.email.trim()) newErrors.email = "Email is required"
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email format"
-    
-    if (!formData.phone.trim()) newErrors.phone = "Phone number is required"
-    else if (!/^(\+91)?[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Invalid Indian phone number"
-    }
-    
-    if (!formData.roll_no.trim()) newErrors.roll_no = "Roll number is required"
-    
-    // Validate ticket details
-    ticketDetails.forEach((detail, index) => {
-      if (!detail.name.trim()) newErrors[`ticket_${index}_name`] = "Attendee name is required"
-      if (!detail.roll_no.trim()) newErrors[`ticket_${index}_roll`] = "Roll number is required"
-      if (detail.email && !/\S+@\S+\.\S+/.test(detail.email)) {
-        newErrors[`ticket_${index}_email`] = "Invalid email format"
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const response = await fetch(`/api/events?id=${params.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setEvent(data.event)
+        } else {
+          setError('Event not found')
+        }
+      } catch (error) {
+        setError('Failed to load event')
+      } finally {
+        setLoading(false)
       }
-    })
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    }
+
+    if (params.id) {
+      fetchEvent()
+    }
+  }, [params.id])
+
+  const handleTicketChange = (tickets: number) => {
+    const newTicketDetails = Array.from({ length: tickets }, (_, i) => 
+      formData.ticket_details[i] || { name: '', roll_no: '', email: '' }
+    )
+    setFormData(prev => ({ ...prev, tickets, ticket_details: newTicketDetails }))
+  }
+
+  const handleTicketDetailChange = (index: number, field: string, value: string) => {
+    const newTicketDetails = [...formData.ticket_details]
+    newTicketDetails[index] = { ...newTicketDetails[index], [field]: value }
+    setFormData(prev => ({ ...prev, ticket_details: newTicketDetails }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setLoading(true)
-    
+    if (!event) return
+
+    setSubmitting(true)
+    setError(null)
+
     try {
       const response = await fetch(`/api/events/${event.id}/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          ticket_details: ticketDetails
-        })
+        body: JSON.stringify(formData)
       })
-      
-      const data = await response.json()
-      
+
       if (response.ok) {
-        // Redirect to payment or success page
-        window.location.href = `/events/${event.id}/payment?registration_id=${data.registration_id}`
+        const data = await response.json()
+        // Redirect to Razorpay checkout
+        const options = {
+          key: data.razorpay_key_id,
+          amount: data.amount,
+          currency: data.currency,
+          name: event.title,
+          description: `Registration for ${event.title}`,
+          order_id: data.razorpay_order_id,
+          handler: function (response: any) {
+            router.push(`/events/payment/success?payment_id=${response.razorpay_payment_id}`)
+          }
+        }
+        
+        // @ts-ignore
+        const rzp = new window.Razorpay(options)
+        rzp.open()
       } else {
-        setErrors({ submit: data.error || 'Registration failed' })
+        const errorData = await response.json()
+        setError(errorData.error || 'Registration failed')
       }
     } catch (error) {
-      setErrors({ submit: 'Network error. Please try again.' })
+      setError('Network error. Please try again.')
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
-  const updateTicketCount = (newCount: number) => {
-    if (newCount < 1 || newCount > event.seats_available) return
-    
-    setFormData(prev => ({ ...prev, tickets: newCount }))
-    
-    // Adjust ticket details array
-    if (newCount > ticketDetails.length) {
-      const newDetails = [...ticketDetails]
-      for (let i = ticketDetails.length; i < newCount; i++) {
-        newDetails.push({ name: "", roll_no: "", email: "" })
-      }
-      setTicketDetails(newDetails)
-    } else if (newCount < ticketDetails.length) {
-      setTicketDetails(ticketDetails.slice(0, newCount))
-    }
+  if (loading) {
+    return (
+      <main className="min-h-[100dvh] text-white">
+        <SiteHeader />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading event...</p>
+          </div>
+        </div>
+        <AppverseFooter />
+      </main>
+    )
   }
 
-  const updateTicketDetail = (index: number, field: keyof TicketDetail, value: string) => {
-    const newDetails = [...ticketDetails]
-    newDetails[index] = { ...newDetails[index], [field]: value }
-    setTicketDetails(newDetails)
+  if (error || !event) {
+    return (
+      <main className="min-h-[100dvh] text-white">
+        <SiteHeader />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-gray-400 mb-4">Event Not Found</h1>
+            <p className="text-gray-500 mb-6">The event you're looking for doesn't exist or has been removed.</p>
+            <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black">
+              <Link href="/events">Back to Events</Link>
+            </Button>
+          </div>
+        </div>
+        <AppverseFooter />
+      </main>
+    )
   }
 
   return (
     <main className="min-h-[100dvh] text-white">
       <SiteHeader />
       
-      {/* Event Summary */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h1 className="text-4xl font-bold mb-6 text-yellow-400">Register for {event.title}</h1>
+      <div className="container mx-auto px-4 py-16 max-w-4xl">
+        <div className="mb-8">
+          <Button asChild variant="outline" className="mb-6 border-gray-700 text-gray-400 hover:bg-gray-800">
+            <Link href={`/events/${event.id}`}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Event
+            </Link>
+          </Button>
+          
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+            Register for {event.title}
+          </h1>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Event Summary */}
+          <Card className="glass-border-enhanced">
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold mb-4 text-yellow-400">Event Details</h2>
               
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-yellow-400" />
+                  <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-yellow-400" />
+                  <span>{new Date(event.start_datetime).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })} - {new Date(event.end_datetime).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5 text-yellow-400" />
+                  <span>{event.seats_available} seats available</span>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-700 pt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg">Price per ticket:</span>
+                  <span className="text-2xl font-bold text-yellow-400">
+                    ₹{(event.price_cents / 100).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Registration Form */}
+          <Card className="glass-border-enhanced">
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold mb-6 text-yellow-400">Registration Form</h2>
+              
+              {error && (
+                <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Personal Information */}
-                <Card className="glass-border-enhanced p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-yellow-400">Personal Information</h2>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name" className="text-yellow-400">Full Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        placeholder="Enter your full name"
-                      />
-                      {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="email" className="text-yellow-400">Email Address *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        placeholder="Enter your email"
-                      />
-                      {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-yellow-400">Phone Number *</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        placeholder="+91 98765 43210"
-                      />
-                      {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="roll_no" className="text-yellow-400">Roll Number *</Label>
-                      <Input
-                        id="roll_no"
-                        value={formData.roll_no}
-                        onChange={(e) => setFormData(prev => ({ ...prev, roll_no: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        placeholder="Enter your roll number"
-                      />
-                      {errors.roll_no && <p className="text-red-400 text-sm mt-1">{errors.roll_no}</p>}
-                    </div>
-                  </div>
-                </Card>
+                <div>
+                  <Label htmlFor="name" className="text-gray-300">Full Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white"
+                    required
+                  />
+                </div>
 
-                {/* Ticket Selection */}
-                <Card className="glass-border-enhanced p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-yellow-400">Ticket Selection</h2>
-                  <div className="flex items-center gap-4 mb-6">
-                    <Label className="text-white">Number of Tickets:</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateTicketCount(formData.tickets - 1)}
-                        disabled={formData.tickets <= 1}
-                        className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-12 text-center font-semibold">{formData.tickets}</span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateTicketCount(formData.tickets + 1)}
-                        disabled={formData.tickets >= event.seats_available}
-                        className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <span className="text-gray-400 text-sm">
-                      (Max {event.seats_available} available)
-                    </span>
-                  </div>
+                <div>
+                  <Label htmlFor="email" className="text-gray-300">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white"
+                    required
+                  />
+                </div>
 
-                  {/* Ticket Details */}
-                  {formData.tickets > 1 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-yellow-400">Attendee Details</h3>
-                      {ticketDetails.map((detail, index) => (
-                        <div key={index} className="glass-border p-4 rounded-lg">
-                          <h4 className="font-medium text-white mb-3">Attendee {index + 1}</h4>
-                          <div className="grid md:grid-cols-3 gap-4">
-                            <div>
-                              <Label className="text-yellow-400">Name *</Label>
-                              <Input
-                                value={detail.name}
-                                onChange={(e) => updateTicketDetail(index, 'name', e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white"
-                                placeholder="Attendee name"
-                              />
-                              {errors[`ticket_${index}_name`] && (
-                                <p className="text-red-400 text-sm mt-1">{errors[`ticket_${index}_name`]}</p>
-                              )}
-                            </div>
-                            <div>
-                              <Label className="text-yellow-400">Roll Number *</Label>
-                              <Input
-                                value={detail.roll_no}
-                                onChange={(e) => updateTicketDetail(index, 'roll_no', e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white"
-                                placeholder="Roll number"
-                              />
-                              {errors[`ticket_${index}_roll`] && (
-                                <p className="text-red-400 text-sm mt-1">{errors[`ticket_${index}_roll`]}</p>
-                              )}
-                            </div>
-                            <div>
-                              <Label className="text-yellow-400">Email (Optional)</Label>
-                              <Input
-                                type="email"
-                                value={detail.email || ""}
-                                onChange={(e) => updateTicketDetail(index, 'email', e.target.value)}
-                                className="bg-gray-900/50 border-gray-700 text-white"
-                                placeholder="Email address"
-                              />
-                              {errors[`ticket_${index}_email`] && (
-                                <p className="text-red-400 text-sm mt-1">{errors[`ticket_${index}_email`]}</p>
-                              )}
-                            </div>
+                <div>
+                  <Label htmlFor="phone" className="text-gray-300">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white"
+                    placeholder="+91 9876543210"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="roll_no" className="text-gray-300">Roll Number</Label>
+                  <Input
+                    id="roll_no"
+                    value={formData.roll_no}
+                    onChange={(e) => setFormData(prev => ({ ...prev, roll_no: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700 text-white"
+                    placeholder="Optional"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="tickets" className="text-gray-300">Number of Tickets *</Label>
+                  <Input
+                    id="tickets"
+                    type="number"
+                    min="1"
+                    max={event.seats_available}
+                    value={formData.tickets}
+                    onChange={(e) => handleTicketChange(parseInt(e.target.value) || 1)}
+                    className="bg-gray-900/50 border-gray-700 text-white"
+                    required
+                  />
+                </div>
+
+                {/* Dynamic ticket details */}
+                {formData.tickets > 1 && (
+                  <div>
+                    <Label className="text-gray-300">Attendee Details</Label>
+                    <div className="space-y-4 mt-2">
+                      {formData.ticket_details.map((detail, index) => (
+                        <div key={index} className="border border-gray-700 rounded-lg p-4">
+                          <h4 className="text-sm font-medium text-gray-300 mb-3">Attendee {index + 1}</h4>
+                          <div className="grid gap-3">
+                            <Input
+                              placeholder="Full Name"
+                              value={detail.name}
+                              onChange={(e) => handleTicketDetailChange(index, 'name', e.target.value)}
+                              className="bg-gray-900/50 border-gray-700 text-white"
+                              required
+                            />
+                            <Input
+                              placeholder="Roll Number"
+                              value={detail.roll_no}
+                              onChange={(e) => handleTicketDetailChange(index, 'roll_no', e.target.value)}
+                              className="bg-gray-900/50 border-gray-700 text-white"
+                            />
+                            <Input
+                              placeholder="Email"
+                              type="email"
+                              value={detail.email}
+                              onChange={(e) => handleTicketDetailChange(index, 'email', e.target.value)}
+                              className="bg-gray-900/50 border-gray-700 text-white"
+                              required
+                            />
                           </div>
                         </div>
                       ))}
                     </div>
-                  )}
-                </Card>
-
-                {errors.submit && (
-                  <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-                    <p className="text-red-400">{errors.submit}</p>
                   </div>
                 )}
 
                 <Button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold hover:from-yellow-300 hover:to-yellow-400 py-4"
+                  disabled={submitting || event.seats_available === 0}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold hover:from-yellow-300 hover:to-yellow-400 disabled:opacity-50"
                 >
-                  {loading ? "Processing..." : `Proceed to Payment - ₹${event.price * formData.tickets}`}
+                  {submitting ? 'Processing...' : event.seats_available === 0 ? 'Sold Out' : 'Proceed to Payment'}
                 </Button>
               </form>
             </div>
-
-            {/* Event Summary Sidebar */}
-            <div>
-              <Card className="glass-border-enhanced p-6 sticky top-24">
-                <h3 className="text-xl font-semibold mb-4 text-yellow-400">Event Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-gray-300">
-                    <Calendar className="h-5 w-5 text-yellow-400" />
-                    <span>{new Date(event.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-300">
-                    <Clock className="h-5 w-5 text-yellow-400" />
-                    <span>{event.time} • {event.duration}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-300">
-                    <MapPin className="h-5 w-5 text-yellow-400" />
-                    <span>{event.venue}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-300">
-                    <Users className="h-5 w-5 text-yellow-400" />
-                    <span>{event.seats_available} seats remaining</span>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-700 mt-6 pt-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-300">Tickets ({formData.tickets})</span>
-                    <span className="text-white">₹{event.price} each</span>
-                  </div>
-                  <div className="flex justify-between items-center text-lg font-semibold">
-                    <span className="text-yellow-400">Total</span>
-                    <span className="text-yellow-400">₹{event.price * formData.tickets}</span>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
+          </Card>
         </div>
-      </section>
+      </div>
 
       <AppverseFooter />
     </main>

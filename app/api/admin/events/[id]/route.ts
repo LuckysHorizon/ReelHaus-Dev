@@ -5,15 +5,15 @@ import { z } from 'zod'
 
 const eventUpdateSchema = z.object({
   title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  cover_image_url: z.string().url().optional(),
-  start_datetime: z.string().datetime().optional(),
-  end_datetime: z.string().datetime().optional(),
-  seats_total: z.number().min(0).optional(),
-  seats_available: z.number().min(0).optional(),
-  price_cents: z.number().min(0).optional(),
+  description: z.string().optional().or(z.literal('')),
+  cover_image_url: z.string().optional().or(z.literal('')),
+  start_datetime: z.string().optional().or(z.literal('')),
+  end_datetime: z.string().optional().or(z.literal('')),
+  seats_total: z.coerce.number().min(0).optional(),
+  seats_available: z.coerce.number().min(0).optional(),
+  price_cents: z.coerce.number().min(0).optional(),
   currency: z.string().optional(),
-  is_active: z.boolean().optional()
+  is_active: z.coerce.boolean().optional()
 })
 
 // GET /api/admin/events/[id] - Get single event

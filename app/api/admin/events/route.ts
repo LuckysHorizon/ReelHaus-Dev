@@ -4,16 +4,16 @@ import { withAdminAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
 
 const eventSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  cover_image_url: z.string().url().optional(),
-  start_datetime: z.string().datetime().optional(),
-  end_datetime: z.string().datetime().optional(),
-  seats_total: z.number().min(0),
-  seats_available: z.number().min(0),
-  price_cents: z.number().min(0),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional().or(z.literal('')),
+  cover_image_url: z.string().optional().or(z.literal('')),
+  start_datetime: z.string().optional().or(z.literal('')),
+  end_datetime: z.string().optional().or(z.literal('')),
+  seats_total: z.coerce.number().min(0, 'Seats must be 0 or greater'),
+  seats_available: z.coerce.number().min(0, 'Available seats must be 0 or greater'),
+  price_cents: z.coerce.number().min(0, 'Price must be 0 or greater'),
   currency: z.string().default('INR'),
-  is_active: z.boolean().default(true)
+  is_active: z.coerce.boolean().default(true)
 })
 
 // GET /api/admin/events - List all events
@@ -62,19 +62,28 @@ export const GET = withAdminAuth(async (request: NextRequest, admin) => {
 export const POST = withAdminAuth(async (request: NextRequest, admin) => {
   try {
     const body = await request.json()
+    console.log('Received event data:', JSON.stringify(body, null, 2))
+    
     const validatedData = eventSchema.parse(body)
+    console.log('Validated data:', JSON.stringify(validatedData, null, 2))
     
     const { data: event, error } = await supabaseAdmin
       .from('events')
       .insert({
-        ...validatedData,
-        created_by: admin.username
+        ...validatedData
+        // Note: created_by field might not exist in your schema
+        // Remove this line if the field doesn't exist
       })
       .select()
       .single()
     
     if (error) {
-      return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
+      console.error('Supabase error creating event:', error)
+      return NextResponse.json({ 
+        error: 'Failed to create event', 
+        details: error.message,
+        code: error.code 
+      }, { status: 500 })
     }
     
     // Log admin action
@@ -93,10 +102,19 @@ export const POST = withAdminAuth(async (request: NextRequest, admin) => {
     return NextResponse.json({ event }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid input data', details: error.errors }, { status: 400 })
+      console.error('Validation error:', error.errors)
+      const errorMessages = error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
+      return NextResponse.json({ 
+        error: 'Invalid input data', 
+        details: errorMessages.join(', '),
+        validationErrors: error.errors 
+      }, { status: 400 })
     }
     
     console.error('Error creating event:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 })
