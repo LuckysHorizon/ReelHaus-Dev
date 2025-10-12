@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Calendar, MapPin, Users, Clock } from "lucide-react"
 import Link from "next/link"
 
@@ -172,23 +172,23 @@ export default function EventsPage() {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button 
+                    <ShinyButton 
                       asChild
-                      className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="flex-1"
                     >
                       <Link href={`/events/${event.id}/register`}>
                         Register Now
                       </Link>
-                    </Button>
-                    <Button 
+                    </ShinyButton>
+                    <ShinyButton 
                       asChild
                       variant="outline"
-                      className="border-red-400 text-red-400 hover:bg-red-500 hover:text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="flex-1"
                     >
                       <Link href={`/events/${event.id}`}>
                         Details
                       </Link>
-                    </Button>
+                    </ShinyButton>
                   </div>
                 </div>
               </Card>
@@ -211,9 +211,9 @@ export default function EventsPage() {
               placeholder="Enter your email"
               className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
             />
-            <button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl transition-all duration-200">
+            <ShinyButton className="px-6 py-3">
               Subscribe
-            </button>
+            </ShinyButton>
           </div>
         </div>
       </section>

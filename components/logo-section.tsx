@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { ArrowRight } from "lucide-react"
 
 export function LogoSection() {
@@ -105,10 +105,10 @@ export function LogoSection() {
           </div>
 
           {/* CTA Button */}
-          <Button className="group rounded-full bg-gradient-to-r from-purple-600 to-purple-500 px-8 py-3 text-white shadow-lg shadow-purple-500/25 transition-all hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105">
+          <ShinyButton className="group rounded-full px-8 py-3">
             Try now for free
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
+          </ShinyButton>
         </div>
       </div>
     </section>

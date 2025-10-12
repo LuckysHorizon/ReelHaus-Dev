@@ -5,7 +5,7 @@ import { useParams } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Users, MapPin, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
@@ -75,9 +75,9 @@ export default function EventDetailsPage() {
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-gray-400 mb-4">Event Not Found</h1>
             <p className="text-gray-500 mb-6">The event you're looking for doesn't exist or has been removed.</p>
-            <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black">
+            <ShinyButton asChild>
               <Link href="/events">Back to Events</Link>
-            </Button>
+            </ShinyButton>
           </div>
         </div>
         <AppverseFooter />
@@ -128,25 +128,23 @@ export default function EventDetailsPage() {
               </div>
 
               <div className="flex gap-4">
-                <Button 
+                <ShinyButton 
                   asChild
-                  size="lg"
-                  className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold hover:from-yellow-300 hover:to-yellow-400"
+                  className="px-8 py-3"
                 >
                   <Link href={`/events/${event.id}/register`}>
                     Register Now
                   </Link>
-                </Button>
-                <Button 
+                </ShinyButton>
+                <ShinyButton 
                   asChild
                   variant="outline"
-                  size="lg"
-                  className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                  className="px-8 py-3"
                 >
                   <Link href="/events">
                     Back to Events
                   </Link>
-                </Button>
+                </ShinyButton>
               </div>
             </div>
 

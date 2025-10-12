@@ -2,6 +2,7 @@
 
 import React from "react"
 import { motion, type MotionProps } from "motion/react"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -27,46 +28,65 @@ const animationProps: MotionProps = {
 }
 
 interface ShinyButtonProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps>,
     MotionProps {
   children: React.ReactNode
   className?: string
+  variant?: "default" | "outline"
+  asChild?: boolean
 }
 
 export const ShinyButton = React.forwardRef<
   HTMLButtonElement,
   ShinyButtonProps
->(({ children, className, ...props }, ref) => {
+>(({ children, className, variant = "default", asChild = false, ...props }, ref) => {
+  const baseClasses = "relative cursor-pointer rounded-lg px-6 py-2 font-medium backdrop-blur-xl transition-all duration-300 ease-in-out"
+  
+  const variantClasses = {
+    default: "bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-black",
+    outline: "bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white"
+  }
+
+  const Comp = asChild ? Slot : motion.button
+
   return (
-    <motion.button
+    <Comp
       ref={ref}
       className={cn(
-        "relative cursor-pointer rounded-lg border px-6 py-2 font-medium backdrop-blur-xl transition-shadow duration-300 ease-in-out hover:shadow dark:bg-[radial-gradient(circle_at_50%_0%,var(--primary)/10%_0%,transparent_60%)] dark:hover:shadow-[0_0_20px_var(--primary)/10%]",
+        baseClasses,
+        variantClasses[variant],
+        "hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]",
         className
       )}
-      {...animationProps}
+      {...(asChild ? {} : animationProps)}
       {...props}
     >
-      <span
-        className="relative block size-full text-sm tracking-wide text-[rgb(0,0,0,65%)] uppercase dark:font-light dark:text-[rgb(255,255,255,90%)]"
-        style={{
-          maskImage:
-            "linear-gradient(-75deg,var(--primary) calc(var(--x) + 20%),transparent calc(var(--x) + 30%),var(--primary) calc(var(--x) + 100%))",
-        }}
-      >
-        {children}
-      </span>
-      <span
-        style={{
-          mask: "linear-gradient(rgb(0,0,0), rgb(0,0,0)) content-box exclude,linear-gradient(rgb(0,0,0), rgb(0,0,0))",
-          WebkitMask:
-            "linear-gradient(rgb(0,0,0), rgb(0,0,0)) content-box exclude,linear-gradient(rgb(0,0,0), rgb(0,0,0))",
-          backgroundImage:
-            "linear-gradient(-75deg,var(--primary)/10% calc(var(--x)+20%),var(--primary)/50% calc(var(--x)+25%),var(--primary)/10% calc(var(--x)+100%))",
-        }}
-        className="absolute inset-0 z-10 block rounded-[inherit] p-px"
-      />
-    </motion.button>
+      {asChild ? (
+        children
+      ) : (
+        <>
+          <span
+            className="relative block size-full text-sm tracking-wide font-semibold"
+            style={{
+              maskImage:
+                "linear-gradient(-75deg,white calc(var(--x) + 20%),transparent calc(var(--x) + 30%),white calc(var(--x) + 100%))",
+            }}
+          >
+            {children}
+          </span>
+          <span
+            style={{
+              mask: "linear-gradient(rgb(0,0,0), rgb(0,0,0)) content-box exclude,linear-gradient(rgb(0,0,0), rgb(0,0,0))",
+              WebkitMask:
+                "linear-gradient(rgb(0,0,0), rgb(0,0,0)) content-box exclude,linear-gradient(rgb(0,0,0), rgb(0,0,0))",
+              backgroundImage:
+                "linear-gradient(-75deg,rgba(255,255,255,0.1) calc(var(--x)+20%),rgba(255,255,255,0.5) calc(var(--x)+25%),rgba(255,255,255,0.1) calc(var(--x)+100%))",
+            }}
+            className="absolute inset-0 z-10 block rounded-[inherit] p-px"
+          />
+        </>
+      )}
+    </Comp>
   )
 })
 

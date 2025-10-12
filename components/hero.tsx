@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import Image from "next/image"
 import LazyVideo from "./lazy-video"
 
 export function Hero() {
   const buttonNew = (
-    <Button asChild className="rounded-full bg-gradient-to-r from-red-500 to-red-600 px-6 text-white hover:from-red-400 hover:to-red-500">
+    <ShinyButton asChild className="rounded-full">
       <a href="#events" target="_blank" rel="noopener noreferrer">
         Explore Events
       </a>
-    </Button>
+    </ShinyButton>
   )
 
   return (

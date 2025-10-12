@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import Image from "next/image"
 import { Menu, Briefcase, Tag, HelpCircle, FileText, Info, UserCog, LogOut } from "lucide-react"
@@ -66,15 +66,14 @@ export function SiteHeader() {
                     {l.label}
                   </Link>
                 ))}
-                <Button
+                <ShinyButton
                   onClick={handleLogout}
                   variant="outline"
-                  size="sm"
-                  className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  className="text-sm px-4 py-2"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
-                </Button>
+                </ShinyButton>
               </>
             ) : (
               <>
@@ -98,14 +97,13 @@ export function SiteHeader() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button
+                <ShinyButton
                   variant="outline"
-                  size="icon"
-                  className="border-gray-700 bg-gray-900/80 text-gray-200 hover:bg-gray-800"
+                  className="p-2"
                 >
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Open menu</span>
-                </Button>
+                </ShinyButton>
               </SheetTrigger>
               <SheetContent
                 side="right"

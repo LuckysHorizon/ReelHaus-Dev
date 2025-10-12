@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { CheckCircle2, Calendar, MapPin, Users } from "lucide-react"
 
@@ -141,18 +141,19 @@ export function Pricing() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button
+                  <ShinyButton
                     asChild
-                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500"
+                    variant="outline"
+                    className="flex-1 rounded-full px-4 py-2 text-sm"
                   >
                     <Link href={`/events/${event.id}`}>View Details</Link>
-                  </Button>
-                  <Button
+                  </ShinyButton>
+                  <ShinyButton
                     asChild
-                    className="flex-1 rounded-full px-4 py-2 text-sm font-medium border-2 border-red-400 text-red-400 hover:bg-red-500 hover:text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="flex-1 rounded-full px-4 py-2 text-sm"
                   >
                     <Link href={`/events/${event.id}/register`}>Register</Link>
-                  </Button>
+                  </ShinyButton>
                 </div>
               </CardHeader>
 
@@ -185,15 +186,14 @@ export function Pricing() {
         </div>
 
         <div className="mt-12 text-center">
-          <Button
+          <ShinyButton
             asChild
-            className="rounded-full px-8 py-3 text-neutral-900 hover:brightness-95"
-            style={{ backgroundColor: ACCENT }}
+            className="rounded-full px-8 py-3"
           >
             <Link href="/events">
               View All Events
             </Link>
-          </Button>
+          </ShinyButton>
         </div>
       </div>
     </section>

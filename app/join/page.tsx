@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -158,12 +158,12 @@ export default function JoinPage() {
                 />
               </div>
               
-              <Button 
+              <ShinyButton 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="w-full"
               >
                 Submit Application
-              </Button>
+              </ShinyButton>
             </form>
           </Card>
         </div>
@@ -188,9 +188,9 @@ export default function JoinPage() {
                     </div>
                     <p className="text-gray-300 mt-2">{position.description}</p>
                   </div>
-                  <Button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl transition-all duration-200">
+                  <ShinyButton>
                     Apply Now
-                  </Button>
+                  </ShinyButton>
                 </div>
               </Card>
             ))}
@@ -206,12 +206,12 @@ export default function JoinPage() {
             Have questions about membership or career opportunities? We'd love to hear from you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl transition-all duration-200">
+            <ShinyButton>
               Contact Us
-            </Button>
-            <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-500 hover:text-white shadow-lg hover:shadow-xl transition-all duration-200">
+            </ShinyButton>
+            <ShinyButton variant="outline">
               Schedule a Call
-            </Button>
+            </ShinyButton>
           </div>
         </div>
       </section>
