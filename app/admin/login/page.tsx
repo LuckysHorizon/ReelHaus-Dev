@@ -26,22 +26,22 @@ export default function AdminLoginPage() {
     setError(null)
 
     try {
+      // Call the real admin login API
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       })
 
-      const data = await response.json()
-
       if (response.ok) {
-        // Store token and redirect to admin dashboard
+        const data = await response.json()
         localStorage.setItem('admin_token', data.token)
         router.push('/admin/dashboard')
       } else {
-        setError(data.error || 'Login failed')
+        const errorData = await response.json()
+        setError(errorData.error || 'Login failed')
       }
     } catch (error) {
       setError('Network error. Please try again.')

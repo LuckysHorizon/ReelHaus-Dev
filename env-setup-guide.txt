@@ -1,0 +1,44 @@
+# ===========================================
+# ReelHaus - Environment Variables Setup Guide
+# ===========================================
+
+# STEP 1: Create .env.local file in your project root
+# Copy this content to .env.local file
+
+# ===========================================
+# SUPABASE CONFIGURATION
+# ===========================================
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# ===========================================
+# ADMIN AUTHENTICATION
+# ===========================================
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+
+# ===========================================
+# JWT SECRET
+# ===========================================
+JWT_SECRET=reelhaus_jwt_secret_key_2024_secure_random_string
+
+# ===========================================
+# QR CODE SECURITY
+# ===========================================
+QR_HMAC_SECRET=reelhaus_qr_hmac_secret_2024
+
+# ===========================================
+# APPLICATION CONFIGURATION
+# ===========================================
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# ===========================================
+# OPTIONAL (for full functionality)
+# ===========================================
+# RAZORPAY_KEY_ID=rzp_test_your_key_id_here
+# RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
+# RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret_here
+# SENDGRID_API_KEY=SG.your_sendgrid_api_key_here
+# REDIS_URL=redis://localhost:6379

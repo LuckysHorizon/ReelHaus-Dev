@@ -35,9 +35,13 @@ export const GET = withAdminAuth(async (request: NextRequest, admin) => {
     }
     
     // Get total count
-    const { count } = await supabaseAdmin
+    const { count, error: countError } = await supabaseAdmin
       .from('events')
       .select('*', { count: 'exact', head: true })
+    
+    if (countError) {
+      console.error('Count error:', countError)
+    }
     
     return NextResponse.json({
       events,

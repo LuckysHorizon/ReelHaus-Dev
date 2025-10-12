@@ -39,3 +39,23 @@ export function withAdminAuth(handler: (request: NextRequest, admin: JWTPayload)
     return handler(request, admin)
   }
 }
+
+// For client-side authentication
+export function getAdminToken(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('admin_token')
+  }
+  return null
+}
+
+export function setAdminToken(token: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('admin_token', token)
+  }
+}
+
+export function removeAdminToken(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('admin_token')
+  }
+}

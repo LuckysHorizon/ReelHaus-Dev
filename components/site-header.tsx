@@ -1,18 +1,39 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import Image from "next/image"
-import { Menu, Briefcase, Tag, HelpCircle, FileText, Info } from "lucide-react"
+import { Menu, Briefcase, Tag, HelpCircle, FileText, Info, UserCog, LogOut } from "lucide-react"
+import { getAdminToken, removeAdminToken } from "@/lib/admin-auth"
 
 export function SiteHeader() {
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const token = getAdminToken()
+    setIsAdmin(!!token)
+  }, [])
+
+  const handleLogout = () => {
+    removeAdminToken()
+    setIsAdmin(false)
+    window.location.href = '/'
+  }
+
   const links = [
     { href: "/", label: "Home", icon: Briefcase },
     { href: "/about", label: "About Us", icon: Info },
     { href: "/team", label: "Team", icon: Briefcase },
     { href: "/join", label: "Join Us", icon: Tag },
     { href: "/blog", label: "Blog", icon: FileText },
+  ]
+
+  const adminLinks = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: UserCog },
+    { href: "/admin/events", label: "Events", icon: Briefcase },
+    { href: "/admin/registrations", label: "Registrations", icon: Tag },
   ]
 
   return (
@@ -33,15 +54,50 @@ export function SiteHeader() {
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-6 text-sm text-gray-300 md:flex">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="hover:text-red-300 transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
+            {isAdmin ? (
+              <>
+                {adminLinks.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className="hover:text-red-300 transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                {links.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className="hover:text-red-300 transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <Link href="/admin/login">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  >
+                    <UserCog className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Desktop CTA */}
@@ -85,21 +141,58 @@ export function SiteHeader() {
                   <span className="font-semibold tracking-wide text-white text-lg">ReelHaus</span>
                 </div>
 
-                {/* Nav Links */}
-                <nav className="flex flex-col gap-1 mt-2 text-gray-200">
-                  {links.map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
-                    >
-                      <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
-                        <l.icon className="h-4 w-4" />
-                      </span>
-                      <span className="text-sm">{l.label}</span>
-                    </Link>
-                  ))}
-                </nav>
+                        {/* Nav Links */}
+                        <nav className="flex flex-col gap-1 mt-2 text-gray-200">
+                          {isAdmin ? (
+                            <>
+                              {adminLinks.map((l) => (
+                                <Link
+                                  key={l.href}
+                                  href={l.href}
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
+                                >
+                                  <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
+                                    <l.icon className="h-4 w-4" />
+                                  </span>
+                                  <span className="text-sm">{l.label}</span>
+                                </Link>
+                              ))}
+                              <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors text-left"
+                              >
+                                <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
+                                  <LogOut className="h-4 w-4" />
+                                </span>
+                                <span className="text-sm">Logout</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {links.map((l) => (
+                                <Link
+                                  key={l.href}
+                                  href={l.href}
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
+                                >
+                                  <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
+                                    <l.icon className="h-4 w-4" />
+                                  </span>
+                                  <span className="text-sm">{l.label}</span>
+                                </Link>
+                              ))}
+                              <Link
+                                href="/admin/login"
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-900 hover:text-red-300 transition-colors"
+                              >
+                                <span className="inline-flex items-center justify-center w-5 h-5 text-gray-400">
+                                  <UserCog className="h-4 w-4" />
+                                </span>
+                                <span className="text-sm">Admin</span>
+                              </Link>
+                            </>
+                          )}
+                        </nav>
 
                 {/* CTA Button at Bottom */}
                 <div className="mt-auto border-t border-gray-800 p-4">
