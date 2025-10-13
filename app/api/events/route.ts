@@ -7,18 +7,42 @@ export async function GET(request: NextRequest) {
     const eventId = searchParams.get('id')
     
     if (eventId) {
-      // Get single event
-      const { data: event, error } = await supabase
+      console.log('Fetching event with ID:', eventId)
+      
+      // Get single event (first try with is_active filter)
+      let { data: event, error } = await supabase
         .from('events')
         .select('*')
         .eq('id', eventId)
         .eq('is_active', true)
         .single()
       
+      // If not found, try without is_active filter
+      if (error && error.code === 'PGRST116') {
+        console.log('Event not found with is_active=true, trying without filter')
+        const { data: eventFallback, error: errorFallback } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .single()
+        
+        event = eventFallback
+        error = errorFallback
+      }
+      
+      console.log('Supabase query result:', { event, error })
+      
       if (error) {
+        console.error('Supabase error:', error)
+        return NextResponse.json({ error: 'Event not found', details: error.message }, { status: 404 })
+      }
+      
+      if (!event) {
+        console.error('No event found for ID:', eventId)
         return NextResponse.json({ error: 'Event not found' }, { status: 404 })
       }
       
+      console.log('Event found:', event.title)
       return NextResponse.json({ event })
     } else {
       // Get all active events
