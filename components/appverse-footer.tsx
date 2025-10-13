@@ -67,6 +67,29 @@ export function AppverseFooter() {
                 </ul>
               </div>
               <div>
+                <h5 className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">Legal</h5>
+                <ul className="space-y-2 text-sm text-neutral-300">
+                  <li>
+                    <Link href="/legal/terms" className="hover:text-red-400">Terms & Conditions</Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/privacy" className="hover:text-red-400">Privacy Policy</Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/refunds" className="hover:text-red-400">Cancellation & Refunds</Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/shipping" className="hover:text-red-400">Shipping / Delivery</Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/pricing" className="hover:text-red-400">Pricing / Product Details</Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/contact" className="hover:text-red-400">Contact Us</Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
                 <h5 className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">Social media</h5>
                 <ul className="space-y-2 text-sm text-neutral-300">
                   <li className="flex items-center gap-2">
