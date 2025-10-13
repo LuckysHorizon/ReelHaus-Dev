@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: reelhaus
+    env: node
+    plan: starter
+    region: oregon
+    runtime: node
+    nodeVersion: 20
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: NEXT_PUBLIC_RAZORPAY_KEY_ID
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+    disk:
+      - name: ephemeral
+        mountPath: /tmp
+        sizeGB: 1
+

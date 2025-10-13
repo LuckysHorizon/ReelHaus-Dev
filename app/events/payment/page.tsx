@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
@@ -22,7 +22,7 @@ interface PaymentData {
   currency: string
 }
 
-export default function PaymentPage() {
+function PaymentPageInner() {
   const searchParams = useSearchParams()
   const registrationId = searchParams.get('registration_id')
   
@@ -242,5 +242,26 @@ export default function PaymentPage() {
 
       <AppverseFooter />
     </main>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-[100dvh] text-white">
+          <SiteHeader />
+          <div className="container mx-auto px-4 py-20">
+            <div className="max-w-md mx-auto text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+              <p className="text-gray-300">Loading payment...</p>
+            </div>
+          </div>
+          <AppverseFooter />
+        </main>
+      }
+    >
+      <PaymentPageInner />
+    </Suspense>
   )
 }
