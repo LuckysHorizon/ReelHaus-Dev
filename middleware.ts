@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  const url = request.nextUrl
+  // Redirect legacy legal routes to new paths
+  const redirects: Record<string, string> = {
+    '/terms': '/legal/terms',
+    '/privacy': '/legal/privacy',
+    '/refunds': '/legal/refunds',
+    '/cancellation-and-refunds': '/legal/refunds',
+    '/shipping': '/legal/shipping',
+    '/delivery': '/legal/shipping',
+    '/pricing': '/legal/pricing',
+    '/product-details': '/legal/pricing',
+    '/contact': '/legal/contact',
+  }
+
+  const dest = redirects[url.pathname]
+  if (dest) {
+    return NextResponse.redirect(new URL(dest, url), 308)
+  }
+
   const response = NextResponse.next()
 
   // Add performance headers for faster loading
