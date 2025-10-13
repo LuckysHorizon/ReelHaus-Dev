@@ -78,10 +78,14 @@ export default function EventRegistrationPage() {
   }, [params.id])
 
   const handleTicketChange = (tickets: number) => {
-    const newTicketDetails = Array.from({ length: tickets }, (_, i) => 
+    // Ensure tickets is between 1 and 6
+    const validTickets = Math.min(Math.max(tickets, 1), 6)
+    
+    // Create ticket details for the number of tickets (excluding the main registrant)
+    const newTicketDetails = Array.from({ length: validTickets - 1 }, (_, i) => 
       formData.ticket_details[i] || { name: '', roll_no: '', email: '' }
     )
-    setFormData(prev => ({ ...prev, tickets, ticket_details: newTicketDetails }))
+    setFormData(prev => ({ ...prev, tickets: validTickets, ticket_details: newTicketDetails }))
   }
 
   const handleTicketDetailChange = (index: number, field: string, value: string) => {
@@ -103,27 +107,53 @@ export default function EventRegistrationPage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          event_id: event.id
+        })
       })
 
       if (response.ok) {
         const data = await response.json()
-        // Redirect to Razorpay checkout
-        const options = {
-          key: data.razorpay_key_id,
-          amount: data.amount,
-          currency: data.currency,
-          name: event.title,
-          description: `Registration for ${event.title}`,
-          order_id: data.razorpay_order_id,
-          handler: function (response: any) {
-            router.push(`/events/payment/success?payment_id=${response.razorpay_payment_id}`)
-          }
-        }
         
-        // @ts-ignore
-        const rzp = new window.Razorpay(options)
-        rzp.open()
+        // Load Razorpay script
+        const script = document.createElement('script')
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+        script.onload = () => {
+          const options = {
+            key: data.razorpay_key_id,
+            amount: data.amount,
+            currency: data.currency,
+            name: event.title,
+            description: `Registration for ${event.title}`,
+            order_id: data.razorpay_order_id,
+            handler: function (response: any) {
+              router.push(`/events/payment/success?payment_id=${response.razorpay_payment_id}&registration_id=${data.registration_id}`)
+            },
+            prefill: {
+              name: formData.name,
+              email: formData.email,
+              contact: formData.phone
+            },
+            theme: {
+              color: '#DC2626'
+            },
+            modal: {
+              ondismiss: function() {
+                setSubmitting(false)
+              }
+            }
+          }
+          
+          // @ts-ignore
+          const rzp = new window.Razorpay(options)
+          rzp.open()
+        }
+        script.onerror = () => {
+          setError('Failed to load payment gateway')
+          setSubmitting(false)
+        }
+        document.body.appendChild(script)
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Registration failed')
@@ -181,7 +211,7 @@ export default function EventRegistrationPage() {
             </Link>
           </Button>
           
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-4 text-white">
             Register for {event.title}
           </h1>
         </div>
@@ -190,11 +220,11 @@ export default function EventRegistrationPage() {
           {/* Event Summary */}
           <Card className="glass-border-enhanced">
             <div className="p-6">
-              <h2 className="text-2xl font-semibold mb-4 text-yellow-400">Event Details</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-white">Event Details</h2>
               
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-yellow-400" />
+                  <Calendar className="h-5 w-5 text-white" />
                   <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -203,7 +233,7 @@ export default function EventRegistrationPage() {
                   })}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-yellow-400" />
+                  <Clock className="h-5 w-5 text-white" />
                   <span>{new Date(event.start_datetime).toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
@@ -213,7 +243,7 @@ export default function EventRegistrationPage() {
                   })}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-yellow-400" />
+                  <Users className="h-5 w-5 text-white" />
                   <span>{event.seats_available} seats available</span>
                 </div>
               </div>
@@ -221,7 +251,7 @@ export default function EventRegistrationPage() {
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg">Price per ticket:</span>
-                  <span className="text-2xl font-bold text-yellow-400">
+                  <span className="text-2xl font-bold text-white">
                     ₹{(event.price_cents / 100).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -232,7 +262,7 @@ export default function EventRegistrationPage() {
           {/* Registration Form */}
           <Card className="glass-border-enhanced">
             <div className="p-6">
-              <h2 className="text-2xl font-semibold mb-6 text-yellow-400">Registration Form</h2>
+              <h2 className="text-2xl font-semibold mb-6 text-white">Registration Form</h2>
               
               {error && (
                 <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
@@ -294,22 +324,24 @@ export default function EventRegistrationPage() {
                     id="tickets"
                     type="number"
                     min="1"
-                    max={event.seats_available}
+                    max={Math.min(6, event.seats_available)}
                     value={formData.tickets}
                     onChange={(e) => handleTicketChange(parseInt(e.target.value) || 1)}
                     className="bg-gray-900/50 border-gray-700 text-white"
                     required
                   />
+                  <p className="text-xs text-gray-400 mt-1">Maximum 6 tickets per registration</p>
                 </div>
 
                 {/* Dynamic ticket details */}
                 {formData.tickets > 1 && (
                   <div>
-                    <Label className="text-gray-300">Attendee Details</Label>
+                    <Label className="text-gray-300">Additional Attendee Details</Label>
+                    <p className="text-xs text-gray-400 mb-3">Fill details for {formData.tickets - 1} additional attendee{formData.tickets - 1 > 1 ? 's' : ''}</p>
                     <div className="space-y-4 mt-2">
                       {formData.ticket_details.map((detail, index) => (
                         <div key={index} className="border border-gray-700 rounded-lg p-4">
-                          <h4 className="text-sm font-medium text-gray-300 mb-3">Attendee {index + 1}</h4>
+                          <h4 className="text-sm font-medium text-gray-300 mb-3">Attendee {index + 2}</h4>
                           <div className="grid gap-3">
                             <Input
                               placeholder="Full Name"
@@ -342,7 +374,7 @@ export default function EventRegistrationPage() {
                 <Button
                   type="submit"
                   disabled={submitting || event.seats_available === 0}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold hover:from-yellow-300 hover:to-yellow-400 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-400 hover:to-red-500 disabled:opacity-50"
                 >
                   {submitting ? 'Processing...' : event.seats_available === 0 ? 'Sold Out' : 'Proceed to Payment'}
                 </Button>

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { CheckCircle2, Download, Mail, QrCode, Calendar, MapPin } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
@@ -23,24 +23,25 @@ function PaymentSuccessInner() {
       return
     }
 
-    // Simulate fetching registration data
-    setTimeout(() => {
-      setRegistrationData({
-        id: registrationId,
-        event: {
-          title: "Neon Nights",
-          date: "2024-02-15",
-          time: "21:00",
-          venue: "Club Aurora"
-        },
-        name: "John Doe",
-        email: "john@example.com",
-        tickets: 2,
-        amount: 3000
-      })
-      setQrCodeUrl("/placeholder.jpg") // In production, this would be the actual QR code URL
-      setLoading(false)
-    }, 2000)
+    // Fetch registration data from API
+    const fetchRegistrationData = async () => {
+      try {
+        const response = await fetch(`/api/registrations/${registrationId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setRegistrationData(data)
+          setQrCodeUrl("/placeholder.jpg") // In production, this would be the actual QR code URL
+        } else {
+          console.error('Failed to fetch registration data')
+        }
+      } catch (error) {
+        console.error('Error fetching registration data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRegistrationData()
   }, [paymentId, registrationId])
 
   const downloadQRCode = () => {
@@ -75,14 +76,17 @@ function PaymentSuccessInner() {
         <div className="max-w-4xl mx-auto">
           {/* Success Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-full mb-6">
-              <CheckCircle2 className="h-10 w-10 text-white" />
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-green-500 to-green-600 rounded-full mb-6 animate-pulse">
+              <CheckCircle2 className="h-12 w-12 text-white animate-bounce" />
             </div>
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent">
-              Payment Successful!
+            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-clip-text text-transparent animate-pulse">
+              Thanks for Registering!
             </h1>
             <p className="text-xl text-gray-300 mb-2">
               Your registration has been confirmed
+            </p>
+            <p className="text-lg text-green-400 font-semibold mb-2">
+              Please check your email for details
             </p>
             <p className="text-gray-400">
               Payment ID: {paymentId}
@@ -101,7 +105,7 @@ function PaymentSuccessInner() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 text-gray-300">
                       <Calendar className="h-4 w-4 text-red-400" />
-                      <span>{new Date(registrationData?.event.date).toLocaleDateString('en-US', { 
+                      <span>{new Date(registrationData?.event.start_datetime).toLocaleDateString('en-US', { 
                         weekday: 'long', 
                         year: 'numeric',
                         month: 'long', 
@@ -109,8 +113,14 @@ function PaymentSuccessInner() {
                       })}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-300">
-                      <MapPin className="h-4 w-4 text-red-400" />
-                      <span>{registrationData?.event.venue}</span>
+                      <Clock className="h-4 w-4 text-red-400" />
+                      <span>{new Date(registrationData?.event.start_datetime).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })} - {new Date(registrationData?.event.end_datetime).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}</span>
                     </div>
                   </div>
                 </div>
@@ -126,7 +136,7 @@ function PaymentSuccessInner() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Amount Paid</span>
-                    <span className="text-red-400 font-semibold">₹{registrationData?.amount}</span>
+                    <span className="text-red-400 font-semibold">₹{((registrationData?.event.price_cents || 0) * (registrationData?.tickets || 1) / 100).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
@@ -148,14 +158,14 @@ function PaymentSuccessInner() {
                     <p className="text-sm text-gray-400">
                       Show this QR code at the event entrance
                     </p>
-                    <Button
+                    <ShinyButton
                       onClick={downloadQRCode}
                       variant="outline"
                       className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download QR Code
-                    </Button>
+                    </ShinyButton>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -205,12 +215,12 @@ function PaymentSuccessInner() {
 
           {/* Action Buttons */}
           <div className="text-center mt-8 space-x-4">
-            <Button asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
+            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
               <a href="/events">Browse More Events</a>
-            </Button>
-            <Button asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
+            </ShinyButton>
+            <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
               <a href="/">Back to Home</a>
-            </Button>
+            </ShinyButton>
           </div>
         </div>
       </div>

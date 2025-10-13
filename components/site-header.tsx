@@ -27,7 +27,6 @@ export function SiteHeader() {
     { href: "/about", label: "About Us", icon: Info },
     { href: "/team", label: "Team", icon: Briefcase },
     { href: "/join", label: "Join Us", icon: Tag },
-    { href: "/blog", label: "Blog", icon: FileText },
     { href: "/admin/login", label: "Admin", icon: UserCog },
   ]
 

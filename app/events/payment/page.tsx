@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ShinyButton } from "@/components/ui/shiny-button"
 import { CheckCircle2, Clock, CreditCard, Shield } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
@@ -126,9 +126,9 @@ function PaymentPageInner() {
             <div className="bg-red-900/20 border border-red-500 rounded-lg p-6 mb-6">
               <p className="text-red-400">{error}</p>
             </div>
-            <Button asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
+            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
               <a href="/events">Back to Events</a>
-            </Button>
+            </ShinyButton>
           </div>
         </div>
         <AppverseFooter />
@@ -199,13 +199,13 @@ function PaymentPageInner() {
 
           {/* Payment Button */}
           <div className="text-center mt-8">
-            <Button
+            <ShinyButton
               onClick={handlePayment}
               disabled={processing}
               className="bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-8 py-4 hover:from-red-400 hover:to-red-500 disabled:opacity-50"
             >
               {processing ? 'Processing...' : `Pay ₹${paymentData?.amount}`}
-            </Button>
+            </ShinyButton>
             <p className="text-sm text-gray-400 mt-4">
               You will be redirected to Razorpay's secure payment page
             </p>

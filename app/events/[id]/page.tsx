@@ -94,7 +94,7 @@ export default function EventDetailsPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
                 {event.title}
               </h1>
               <p className="text-xl text-gray-300 mb-8">
@@ -103,7 +103,7 @@ export default function EventDetailsPage() {
               
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3 text-lg">
-                  <Calendar className="h-5 w-5 text-yellow-400" />
+                  <Calendar className="h-5 w-5 text-white" />
                   <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -112,7 +112,7 @@ export default function EventDetailsPage() {
                   })}</span>
                 </div>
                 <div className="flex items-center gap-3 text-lg">
-                  <Clock className="h-5 w-5 text-yellow-400" />
+                  <Clock className="h-5 w-5 text-white" />
                   <span>{new Date(event.start_datetime).toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
@@ -122,7 +122,7 @@ export default function EventDetailsPage() {
                   })}</span>
                 </div>
                 <div className="flex items-center gap-3 text-lg">
-                  <Users className="h-5 w-5 text-yellow-400" />
+                  <Users className="h-5 w-5 text-white" />
                   <span>{event.seats_available} seats available</span>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function EventDetailsPage() {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-3xl font-bold text-yellow-400">
+                    <div className="text-3xl font-bold text-white">
                       ₹{(event.price_cents / 100).toLocaleString('en-IN')}
                     </div>
                     <div className="text-sm text-gray-400">per person</div>

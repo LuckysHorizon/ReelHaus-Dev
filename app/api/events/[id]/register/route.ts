@@ -9,7 +9,7 @@ const registrationSchema = z.object({
   email: z.string().email(),
   phone: z.string().regex(/^(\+91)?[6-9]\d{9}$/, 'Invalid Indian phone number'),
   roll_no: z.string().min(1),
-  tickets: z.number().min(1).max(10),
+  tickets: z.number().min(1).max(6),
   ticket_details: z.array(z.object({
     name: z.string().min(1),
     roll_no: z.string().min(1),
