@@ -22,10 +22,8 @@ export async function POST(request: NextRequest) {
     }
     
     const event = JSON.parse(body)
-    const eventType = event.event
-    const orderId = event.payload?.payment?.entity?.order_id || event.payload?.qr_code?.entity?.order_id || event.payload?.payment_link?.entity?.id
-    
-    console.log(`Razorpay Webhook Event: ${eventType}, Order ID: ${orderId}`)
+            const eventType = event.event
+            const orderId = event.payload?.payment?.entity?.order_id || event.payload?.qr_code?.entity?.order_id || event.payload?.payment_link?.entity?.id
     
     // Handle different event types
     switch (eventType) {
@@ -55,13 +53,11 @@ export async function POST(request: NextRequest) {
       case 'payment_link.expired':
       case 'payment_link.cancelled':
         return await handlePaymentLinkEvent(event)
-      default:
-        console.log(`Unhandled event type: ${eventType}`)
-        return NextResponse.json({ status: 'ignored', message: `Event type ${eventType} not handled` })
+              default:
+                return NextResponse.json({ status: 'ignored', message: `Event type ${eventType} not handled` })
     }
     
   } catch (error) {
-    console.error('Webhook processing error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -109,10 +105,9 @@ async function handlePaymentCaptured(event: any) {
       })
       .eq('id', paymentRecord.id)
     
-    if (updatePaymentError) {
-      console.error('Failed to update payment:', updatePaymentError)
-      return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
-    }
+            if (updatePaymentError) {
+              return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
+            }
     
     // Update registration status
     const { error: updateRegError } = await supabaseAdmin
@@ -120,10 +115,9 @@ async function handlePaymentCaptured(event: any) {
       .update({ status: 'paid' })
       .eq('id', registration.id)
     
-    if (updateRegError) {
-      console.error('Failed to update registration:', updateRegError)
-      return NextResponse.json({ error: 'Failed to update registration' }, { status: 500 })
-    }
+            if (updateRegError) {
+              return NextResponse.json({ error: 'Failed to update registration' }, { status: 500 })
+            }
     
     // Atomically decrement event seats
     const { error: decrementError } = await supabaseAdmin
@@ -132,17 +126,15 @@ async function handlePaymentCaptured(event: any) {
         seats_to_decrement: registration.tickets
       })
     
-    if (decrementError) {
-      console.error('Failed to decrement seats:', decrementError)
-      // Note: In production, you might want to implement a compensation mechanism
-    }
+            if (decrementError) {
+              // Note: In production, you might want to implement a compensation mechanism
+            }
     
     // TODO: Enqueue background jobs for QR generation and email sending
     // This will be implemented in Phase 7
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment.captured:', error)
     return NextResponse.json({ error: 'Failed to process payment.captured' }, { status: 500 })
   }
 }
@@ -162,9 +154,9 @@ async function handlePaymentFailed(event: any) {
       })
       .eq('provider_order_id', orderId)
     
-    if (updateError) {
-      console.error('Failed to update payment status to failed:', updateError)
-    }
+            if (updateError) {
+              // Payment status update failed
+            }
     
     // Update registration status to failed
     const { error: regUpdateError } = await supabaseAdmin
@@ -176,13 +168,12 @@ async function handlePaymentFailed(event: any) {
         .eq('provider_order_id', orderId)
         .single()).data?.registration_id)
     
-    if (regUpdateError) {
-      console.error('Failed to update registration status:', regUpdateError)
-    }
+            if (regUpdateError) {
+              // Registration status update failed
+            }
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment.failed:', error)
     return NextResponse.json({ error: 'Failed to process payment.failed' }, { status: 500 })
   }
 }
@@ -202,13 +193,12 @@ async function handlePaymentAuthorized(event: any) {
       })
       .eq('provider_order_id', orderId)
     
-    if (updateError) {
-      console.error('Failed to update payment status to authorized:', updateError)
-    }
+            if (updateError) {
+              // Payment status update failed
+            }
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment.authorized:', error)
     return NextResponse.json({ error: 'Failed to process payment.authorized' }, { status: 500 })
   }
 }
@@ -240,13 +230,12 @@ async function handlePaymentDispute(event: any) {
       })
       .eq('provider_payment_id', paymentId)
     
-    if (updateError) {
-      console.error('Failed to update payment status for dispute:', updateError)
-    }
+            if (updateError) {
+              // Payment status update failed
+            }
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment dispute:', error)
     return NextResponse.json({ error: 'Failed to process dispute event' }, { status: 500 })
   }
 }
@@ -254,13 +243,11 @@ async function handlePaymentDispute(event: any) {
 // Handle payment downtime events
 async function handlePaymentDowntime(event: any) {
   try {
-    console.log(`Payment downtime: ${event.event}`)
     // Log downtime events for monitoring
     // You might want to store these in a separate table for monitoring purposes
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment downtime:', error)
     return NextResponse.json({ error: 'Failed to process downtime event' }, { status: 500 })
   }
 }
@@ -269,14 +256,12 @@ async function handlePaymentDowntime(event: any) {
 async function handleQRCodeEvent(event: any) {
   try {
     const qrCode = event.payload.qr_code.entity
-    console.log(`QR Code event: ${event.event} for QR ${qrCode.id}`)
     
     // Handle QR code events as needed
     // These might be used for tracking QR code usage or generating new codes
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling QR code event:', error)
     return NextResponse.json({ error: 'Failed to process QR code event' }, { status: 500 })
   }
 }
@@ -285,14 +270,12 @@ async function handleQRCodeEvent(event: any) {
 async function handlePaymentLinkEvent(event: any) {
   try {
     const paymentLink = event.payload.payment_link.entity
-    console.log(`Payment Link event: ${event.event} for link ${paymentLink.id}`)
     
     // Handle payment link events as needed
     // These might be used for tracking payment link usage
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling payment link event:', error)
     return NextResponse.json({ error: 'Failed to process payment link event' }, { status: 500 })
   }
 }

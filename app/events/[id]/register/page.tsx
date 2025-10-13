@@ -59,31 +59,22 @@ export default function EventRegistrationPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        console.log('Fetching event with ID:', params.id, 'Retry count:', retryCount)
         const response = await fetch(`/api/events?id=${params.id}`)
-        console.log('Event fetch response:', response.status)
         
         if (response.ok) {
           const data = await response.json()
-          console.log('Event data received:', data)
           if (data.event) {
             setEvent(data.event)
             setError(null)
-            console.log('Event set successfully:', data.event.title)
           } else {
-            console.error('No event data in response:', data)
             throw new Error('No event data in response')
           }
         } else {
-          console.error('Event fetch failed:', response.status, response.statusText)
           const errorText = await response.text()
-          console.error('Error response:', errorText)
           throw new Error(`Event fetch failed: ${response.status} - ${errorText}`)
         }
       } catch (error) {
-        console.error('Event fetch error:', error)
         if (retryCount < 3) {
-          console.log('Retrying event fetch...')
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
             setLoading(true)
@@ -128,19 +119,13 @@ export default function EventRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('Form submission started')
-    console.log('Event data:', event)
-    console.log('Form data:', formData)
-    
     if (!event) {
-      console.error('No event data available for submission')
       setError('Event data not available. Please refresh the page and try again.')
       setSubmitting(false)
       return
     }
 
     if (!event.id) {
-      console.error('Event ID not available for submission')
       setError('Event ID not available. Please refresh the page and try again.')
       setSubmitting(false)
       return
@@ -195,8 +180,6 @@ export default function EventRegistrationPage() {
     setError(null)
 
     try {
-      console.log('Creating Razorpay order for event:', event.id)
-      
       // Step 1: Create Razorpay order
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
@@ -204,12 +187,18 @@ export default function EventRegistrationPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...formData,
-          event_id: event.id
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          roll_no: formData.roll_no,
+          tickets: formData.tickets,
+          event_id: event.id,
+          // Only include ticket_details if there are additional attendees
+          ...(formData.tickets > 1 && formData.ticket_details && formData.ticket_details.length > 0 
+            ? { ticket_details: formData.ticket_details } 
+            : {})
         })
       })
-      
-      console.log('Order creation response:', response.status)
 
       if (response.ok) {
         const data = await response.json()
@@ -281,7 +270,6 @@ export default function EventRegistrationPage() {
         document.body.appendChild(script)
       } else {
         const errorData = await response.json()
-        console.error('Payment order creation failed:', errorData)
         if (errorData.details) {
           setError(`Validation error: ${errorData.details.map((d: any) => d.message).join(', ')}`)
         } else {
@@ -311,7 +299,6 @@ export default function EventRegistrationPage() {
   }
 
   if (error || !event) {
-    console.log('Rendering error state. Error:', error, 'Event:', event)
     return (
       <main className="min-h-[100dvh] text-white">
         <SiteHeader />
@@ -319,9 +306,6 @@ export default function EventRegistrationPage() {
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-gray-400 mb-4">Event Not Found</h1>
             <p className="text-gray-500 mb-6">The event you're looking for doesn't exist or has been removed.</p>
-            <p className="text-sm text-gray-600 mb-4">Event ID: {params.id}</p>
-            <p className="text-sm text-gray-600 mb-4">Error: {error}</p>
-            <p className="text-sm text-gray-600 mb-4">Retry attempts: {retryCount}/3</p>
             <div className="space-x-4">
               <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black">
                 <Link href="/events">Back to Events</Link>
@@ -362,7 +346,6 @@ export default function EventRegistrationPage() {
           <h1 className="text-4xl font-bold mb-4 text-white">
             Register for {event.title}
           </h1>
-          <p className="text-sm text-gray-400 mb-4">Event ID: {event.id}</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">

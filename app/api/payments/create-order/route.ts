@@ -14,7 +14,7 @@ const createOrderSchema = z.object({
     name: z.string().min(1, 'Attendee name is required'),
     roll_no: z.string().min(1, 'Attendee roll number is required'),
     email: z.string().email('Invalid attendee email format').or(z.literal(''))
-  })).optional().or(z.literal([]))
+  })).optional()
 })
 
 const razorpay = new Razorpay({
@@ -25,10 +25,34 @@ const razorpay = new Razorpay({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('Payment order request body:', JSON.stringify(body, null, 2))
-    
     const validatedData = createOrderSchema.parse(body)
-    console.log('Validation successful:', validatedData)
+    
+    // Additional validation: if tickets > 1, ticket_details must be provided and valid
+    if (validatedData.tickets > 1) {
+      if (!validatedData.ticket_details || validatedData.ticket_details.length === 0) {
+        return NextResponse.json({ 
+          error: 'Attendee details are required for multiple tickets',
+          message: 'Please provide details for additional attendees'
+        }, { status: 400 })
+      }
+      
+      // Validate each attendee detail
+      for (let i = 0; i < validatedData.ticket_details.length; i++) {
+        const attendee = validatedData.ticket_details[i]
+        if (!attendee.name.trim()) {
+          return NextResponse.json({ 
+            error: `Attendee ${i + 2} name is required`,
+            message: 'Please provide name for all additional attendees'
+          }, { status: 400 })
+        }
+        if (!attendee.roll_no.trim()) {
+          return NextResponse.json({ 
+            error: `Attendee ${i + 2} roll number is required`,
+            message: 'Please provide roll number for all additional attendees'
+          }, { status: 400 })
+        }
+      }
+    }
     
     // Get event details
     const { data: event, error: eventError } = await supabaseAdmin
@@ -118,7 +142,6 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors)
       return NextResponse.json({ 
         error: 'Invalid input data', 
         details: error.errors,
@@ -126,7 +149,6 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
     
-    console.error('Error creating Razorpay order:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
