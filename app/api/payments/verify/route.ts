@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
 import { z } from 'zod'
+import { sendPaymentConfirmationEmail } from '@/lib/resend'
 
 const verifyPaymentSchema = z.object({
   razorpay_order_id: z.string(),
@@ -106,7 +107,15 @@ export async function POST(request: NextRequest) {
       console.error('Failed to decrement seats:', decrementError)
       // Note: In production, you might want to implement a compensation mechanism
     }
-    
+    // Fire-and-forget email (do not block response on email network latency)
+    if (process.env.RESEND_API_KEY) {
+      sendPaymentConfirmationEmail({
+        email: registration.email,
+        name: registration.name || 'Attendee',
+        eventName: registration.events.title,
+      }).catch(() => {})
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Payment verified successfully',

@@ -174,10 +174,7 @@ export default function EventDetailsPage() {
                       <CheckCircle2 className="h-4 w-4" />
                       Instant confirmation
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <CheckCircle2 className="h-4 w-4" />
-                      QR code tickets
-                    </div>
+                    
                   </div>
                 </div>
               </Card>

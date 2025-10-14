@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
 import { ShinyButton } from "@/components/ui/shiny-button"
-import { CheckCircle2, Download, Mail, QrCode, Calendar, MapPin, Clock } from "lucide-react"
+import { CheckCircle2, Mail, Calendar, MapPin, Clock } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
 function PaymentSuccessInner() {
@@ -16,7 +16,7 @@ function PaymentSuccessInner() {
   
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
+  
 
   useEffect(() => {
     if (!paymentId || !registrationId) {
@@ -31,7 +31,6 @@ function PaymentSuccessInner() {
         if (response.ok) {
           const data = await response.json()
           setRegistrationData(data)
-          setQrCodeUrl("/placeholder.jpg") // In production, this would be the actual QR code URL
         } else {
           console.error('Failed to fetch registration data')
         }
@@ -45,14 +44,7 @@ function PaymentSuccessInner() {
     fetchRegistrationData()
   }, [paymentId, registrationId])
 
-  const downloadQRCode = () => {
-    if (qrCodeUrl) {
-      const link = document.createElement('a')
-      link.href = qrCodeUrl
-      link.download = `reelhaus-ticket-${registrationId}.png`
-      link.click()
-    }
-  }
+  
 
   if (status === 'failure') {
     return (
@@ -165,40 +157,12 @@ function PaymentSuccessInner() {
               </div>
             </Card>
 
-            {/* QR Code */}
+            {/* Info Card */}
             <Card className="glass-border-enhanced p-6">
-              <h2 className="text-xl font-semibold mb-4 text-red-400">Your Entry Pass</h2>
-              <div className="text-center">
-                {qrCodeUrl ? (
-                  <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-lg inline-block">
-                      <img 
-                        src={qrCodeUrl} 
-                        alt="Event QR Code"
-                        className="w-48 h-48 mx-auto"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      Show this QR code at the event entrance
-                    </p>
-                    <ShinyButton
-                      onClick={downloadQRCode}
-                      variant="outline"
-                      className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download QR Code
-                    </ShinyButton>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="bg-gray-800 rounded-lg p-8">
-                      <QrCode className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                      <p className="text-gray-400">Generating your QR code...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <h2 className="text-xl font-semibold mb-4 text-red-400">Next Steps</h2>
+              <p className="text-sm text-gray-300">
+                We’ve emailed your registration confirmation. Please keep the email handy on event day.
+              </p>
             </Card>
           </div>
 
@@ -217,20 +181,11 @@ function PaymentSuccessInner() {
               </div>
               <div className="text-center">
                 <div className="bg-red-500/20 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                  <QrCode className="h-6 w-6 text-red-400" />
-                </div>
-                <h3 className="font-semibold text-white mb-2">QR Code</h3>
-                <p className="text-sm text-gray-400">
-                  Your QR code is ready! Download it and keep it handy for event entry
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-red-500/20 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
                   <Calendar className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Event Day</h3>
                 <p className="text-sm text-gray-400">
-                  Arrive 30 minutes early and show your QR code at the entrance
+                  Arrive 30 minutes early and keep your email confirmation accessible
                 </p>
               </div>
             </div>

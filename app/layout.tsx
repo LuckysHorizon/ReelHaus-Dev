@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"], display: "swap" })
 export const metadata: Metadata = {
   title: "ReelHaus | Premium Club Events Portal",
   description:
-    "Discover and register for exclusive club events. Secure payments, instant QR codes, and seamless event management.",
+    "Discover and register for exclusive club events. Secure payments, instant email confirmations, and seamless event management.",
   generator: "Next.js",
 }
 

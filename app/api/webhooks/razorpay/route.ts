@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
+import { sendPaymentConfirmationEmail } from '@/lib/resend'
 
 export async function POST(request: NextRequest) {
   try {
@@ -130,8 +131,14 @@ async function handlePaymentCaptured(event: any) {
               // Note: In production, you might want to implement a compensation mechanism
             }
     
-    // TODO: Enqueue background jobs for QR generation and email sending
-    // This will be implemented in Phase 7
+    // Send confirmation email (non-blocking)
+    if (process.env.RESEND_API_KEY) {
+      sendPaymentConfirmationEmail({
+        email: registration.email,
+        name: registration.name || 'Attendee',
+        eventName: registration.registrations?.title || registration.events?.title || 'Your Event'
+      }).catch(() => {})
+    }
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {

@@ -21,7 +21,7 @@ export default function ShippingPage() {
 
             <h2 className="text-2xl font-semibold text-white">1. Ticket Delivery</h2>
             <ul className="list-disc pl-6 space-y-2">
-              <li>After successful payment, your QR-based e-ticket and confirmation email are automatically generated.</li>
+              <li>After successful payment, your confirmation email is automatically generated.</li>
               <li>Tickets can also be accessed under your account dashboard (if logged in).</li>
             </ul>
 

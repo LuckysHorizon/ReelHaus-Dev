@@ -17,12 +17,12 @@ export default function Page() {
     "@type": "WebPageElement",
     "@id": "https://reelhaus.com/#events",
     name: "Event Registration",
-    description: "Premium club events registration with secure payments and instant QR codes",
+    description: "Premium club events registration with secure payments and instant email confirmations",
     url: "https://reelhaus.com/#events",
     mainEntity: {
       "@type": "Service",
       name: "Event Registration Service",
-      description: "Secure event registration with Razorpay payments and QR code generation",
+      description: "Secure event registration with Razorpay payments and email confirmations",
       offers: [
         {
           "@type": "Offer",
@@ -40,7 +40,7 @@ export default function Page() {
     "@id": "https://reelhaus.com/",
     name: "ReelHaus | Premium Club Events Portal",
     description:
-      "Discover and register for exclusive club events. Secure payments, instant QR codes, and seamless event management.",
+      "Discover and register for exclusive club events. Secure payments, instant email confirmations, and seamless event management.",
     url: "https://reelhaus.com/",
     mainEntity: {
       "@type": "Organization",

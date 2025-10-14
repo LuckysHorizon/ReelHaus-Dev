@@ -189,10 +189,7 @@ function PaymentPageInner() {
                   <CheckCircle2 className="h-5 w-5 text-red-400" />
                   <span className="text-gray-300">Instant confirmation</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-red-400" />
-                  <span className="text-gray-300">QR code delivered immediately</span>
-                </div>
+                
               </div>
             </Card>
           </div>
