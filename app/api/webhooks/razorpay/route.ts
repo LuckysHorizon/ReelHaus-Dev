@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
-import { sendPaymentConfirmationEmail } from '@/lib/resend'
+import { sendEmailsToAllAttendees } from '@/lib/resend'
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,12 +80,21 @@ async function handlePaymentCaptured(event: any) {
       return NextResponse.json({ status: 'already_processed' })
     }
     
-    // Get registration details
+    // Get registration details with event information
     const { data: paymentRecord, error: paymentError } = await supabaseAdmin
       .from('payments')
       .select(`
         *,
-        registrations!inner(*)
+        registrations!inner(
+          *,
+          events!inner(
+            id,
+            title,
+            start_datetime,
+            end_datetime,
+            description
+          )
+        )
       `)
       .eq('provider_order_id', orderId)
       .single()
@@ -131,13 +140,44 @@ async function handlePaymentCaptured(event: any) {
               // Note: In production, you might want to implement a compensation mechanism
             }
     
-    // Send confirmation email (non-blocking)
+    // Send confirmation emails to all attendees (non-blocking but with proper error handling)
     if (process.env.RESEND_API_KEY) {
-      sendPaymentConfirmationEmail({
-        email: registration.email,
-        name: registration.name || 'Attendee',
-        eventName: registration.registrations?.title || registration.events?.title || 'Your Event'
-      }).catch(() => {})
+      const event = registration.events
+      const eventDate = new Date(event.start_datetime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      const eventTime = `${new Date(event.start_datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })} - ${new Date(event.end_datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })}`
+
+      // Send emails to all attendees
+      sendEmailsToAllAttendees({
+        mainRegistrant: {
+          email: registration.email,
+          name: registration.name || 'Attendee',
+          roll_no: registration.roll_no || 'N/A',
+        },
+        ticketDetails: registration.ticket_details || [],
+        eventName: event.title,
+        eventDate,
+        eventTime,
+        eventLocation: 'TBD', // Add venue field to events table if needed
+        paymentId: payment.id,
+      }).catch((emailError) => {
+        console.error('Email sending failed for webhook payment.captured:', emailError)
+        // Don't fail the webhook if email fails
+      })
+    } else {
+      console.warn('RESEND_API_KEY not configured - skipping email confirmation')
     }
     
     return NextResponse.json({ status: 'success' })
