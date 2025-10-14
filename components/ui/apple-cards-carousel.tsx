@@ -15,7 +15,7 @@ export function Card({ card, index }: { card: CardData; index: number }) {
   return (
     <div
       data-index={index}
-      className="relative select-none overflow-hidden rounded-3xl bg-black/40 border border-white/10 shadow-xl w-[36vw] h-[56vw] max-w-[260px] max-h-[380px] sm:w-[300px] sm:h-[420px] md:w-[320px] md:h-[440px]"
+      className="relative select-none overflow-hidden rounded-3xl bg-black/40 shadow-lg transform-gpu will-change-transform backface-hidden w-[36vw] h-[52vw] max-w-[280px] max-h-[380px] sm:w-[300px] sm:h-[420px] md:w-[320px] md:h-[440px]"
     >
       <Image
         src={card.src}
@@ -29,10 +29,9 @@ export function Card({ card, index }: { card: CardData; index: number }) {
       <div className="absolute top-4 left-4 text-[11px] tracking-wide uppercase text-white/80">
         {card.category}
       </div>
-      <div className="absolute top-10 left-4 right-4 text-white font-extrabold text-base sm:text-xl leading-snug">
+      <div className="absolute top-10 left-4 right-4 text-white font-extrabold text-sm sm:text-xl leading-snug transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
         {card.title}
       </div>
-      {/* Optional rich content */}
     </div>
   )
 }
@@ -48,11 +47,14 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
 
   useEffect(() => {
     if (paused) return
-    const id = setInterval(() => setCurrent((c) => wrap(c + 1)), 5000) // slower auto-scroll for smooth feel
+    const id = setInterval(() => setCurrent((c) => wrap(c + 1)), 7000)
     return () => clearInterval(id)
   }, [paused, total])
 
   const startX = useRef<number | null>(null)
+
+  const goPrev = () => setCurrent((c) => wrap(c - 1))
+  const goNext = () => setCurrent((c) => wrap(c + 1))
 
   return (
     <div
@@ -71,40 +73,49 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
         setTimeout(() => setPaused(false), 300)
       }}
     >
-      {/* arrows */}
+      {/* Desktop arrows */}
       <button
         aria-label="Prev"
         className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-        onClick={() => setCurrent((c) => wrap(c - 1))}
+        onClick={goPrev}
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="flex items-center justify-center gap-2 md:gap-6">
-        {[items[left], items[current], items[right]].map((node, i) => (
-          <div
-            key={i}
-            className={[
-              // smooth slow-mo transitions
-              "transition-all duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
-              // highlighted center vs shadowed sides
-              i === 1
-                ? "z-20 scale-110 opacity-100 drop-shadow-[0_12px_28px_rgba(0,0,0,0.35)]"
-                : "z-10 opacity-70 scale-95 drop-shadow-[0_10px_22px_rgba(0,0,0,0.45)]",
-              // desktop slants: left tilts left, right tilts right; mobile stays straight but scaled
-              i === 0 ? "md:-rotate-[3deg] md:-translate-x-1" : "",
-              i === 2 ? "md:rotate-[3deg] md:translate-x-1" : "",
-            ].join(" ")}
-          >
-            {node}
-          </div>
-        ))}
+      <div className="flex items-center justify-center gap-1 md:gap-4">
+        {[items[left], items[current], items[right]].map((node, i) => {
+          const isCenter = i === 1
+          return (
+            <div
+              key={i}
+              className={[
+                "group transition-[transform,opacity,filter] will-change-transform transform-gpu",
+                "duration-[1400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
+                isCenter
+                  ? "z-20 scale-[1.08] md:scale-[1.1] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:hover:[transform:perspective(1000px)_rotateY(2deg)]"
+                  : "z-10 opacity-60 scale-95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]",
+                !isCenter && i === 0
+                  ? "-translate-x-[2.25rem] sm:-translate-x-[2.5rem] md:-translate-x-[1.5rem] -rotate-[8deg]"
+                  : "",
+                !isCenter && i === 2
+                  ? "translate-x-[2.25rem] sm:translate-x-[2.5rem] md:translate-x-[1.5rem] rotate-[8deg]"
+                  : "",
+                isCenter ? "hover:shadow-[0_24px_72px_rgba(0,0,0,0.55)]" : "",
+              ].join(" ")}
+              style={{ transition: "transform 1.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out 0.2s" }}
+            >
+              <div className={isCenter ? "[&_.title]:opacity-100 [&_.title]:translate-y-0" : "[&_.title]:opacity-60 [&_.title]:translate-y-[10px]"}>
+                {node}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <button
         aria-label="Next"
         className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-        onClick={() => setCurrent((c) => wrap(c + 1))}
+        onClick={goNext}
       >
         <ChevronRight className="h-5 w-5" />
       </button>

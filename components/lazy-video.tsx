@@ -27,57 +27,50 @@ export default function LazyVideo({
   ...props
 }: LazyVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const el = videoRef.current
     if (!el) return
 
-    const playVideo = async () => {
-      try {
-        // Reduce autoplay on mobile to prevent flickering
-        if (isMobile) {
-          // Delay autoplay on mobile
-          setTimeout(async () => {
-            try {
-              await el.play()
-            } catch (error) {
-              // Silently fail on mobile autoplay issues
-            }
-          }, 1000)
-        } else {
-          await el.play()
-        }
-      } catch (error) {
-        // Silently fail on autoplay issues
-      }
-    }
+    let io: IntersectionObserver | null = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (!el) return
 
-    // Load and play immediately when component mounts
-    el.src = src
-    el.load()
-    if (autoplay) playVideo()
-  }, [src, autoplay, isMobile])
+        // When approaching viewport, attach src and play
+        if (entry.isIntersecting && !loaded) {
+          el.src = src
+          el.load()
+          setLoaded(true)
+          if (autoplay) {
+            el.play().catch(() => {})
+          }
+        }
+
+        // Pause when out of view to avoid jank on scroll
+        if (!entry.isIntersecting && !el.paused) {
+          try { el.pause() } catch {}
+        }
+      },
+      { rootMargin: "200px 0px" }
+    )
+
+    io.observe(el)
+    return () => {
+      io && io.disconnect()
+    }
+  }, [src, autoplay, loaded])
 
   return (
     <video
       ref={videoRef}
-      className={className}
+      className={`transform-gpu will-change-transform backface-hidden ${className}`}
       muted={muted}
       loop={loop}
       playsInline={playsInline}
       controls={controls}
-      preload="auto"
+      preload="none"
       poster={poster}
       aria-label={ariaLabel}
       {...props}
