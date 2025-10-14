@@ -69,8 +69,7 @@ export async function POST(request: NextRequest) {
       .from('payments')
       .update({
         provider_payment_id: razorpay_payment_id,
-        status: 'succeeded',
-        verified_at: new Date().toISOString()
+        status: 'succeeded'
       })
       .eq('id', payment.id)
     
