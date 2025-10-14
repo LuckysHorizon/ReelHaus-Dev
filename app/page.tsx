@@ -1,7 +1,8 @@
 import { SiteHeader } from "@/components/site-header"
 import { Hero } from "@/components/hero"
 import { Features } from "@/components/features"
-import { LogoMarquee } from "@/components/logo-marquee"
+// import { LogoMarquee } from "@/components/logo-marquee"
+import { EventHighlights } from "@/components/event-highlights"
 import { Pricing } from "@/components/pricing"
 import { AppverseFooter } from "@/components/appverse-footer"
 import Script from "next/script"
@@ -66,7 +67,8 @@ export default function Page() {
         <SiteHeader />
         <Hero />
         <Features />
-        <LogoMarquee />
+        {/* Replaced fast-scrolling marquee with event highlights carousel */}
+        <EventHighlights />
         <Pricing />
         <AppverseFooter />
       </main>

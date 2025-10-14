@@ -39,6 +39,15 @@
   --sidebar-ring: oklch(0.7 0.25 15);
 }
 
+/* Smooth scrolling & rendering hints */
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Reduce motion for users who prefer it to avoid jank */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
 .dark {
   --background: oklch(0.05 0 0);
   --foreground: oklch(0.95 0 0);
@@ -114,165 +123,55 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --animate-background-position-spin: background-position-spin 3000ms infinite alternate;
   @keyframes background-position-spin {
-  0% {
-    background-position: top center;
-    }
-  100% {
-    background-position: bottom center;
-    }
+  0% { background-position: top center; }
+  100% { background-position: bottom center; }
   }
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
 }
 
 /* Apple Site Header Glass Effects - Clean, Minimal, Crisp */
-.liquid-glass {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
+.liquid-glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
 
-.liquid-glass-enhanced {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
+.liquid-glass-enhanced { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
 
-.liquid-glass-header {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
+.liquid-glass-header { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
 
 /* Apple-style glass border utilities - Clean and minimal */
-.glass-border {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
+.glass-border { border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
 
-.glass-border-enhanced {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
+.glass-border-enhanced { border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
 
-.glass-border-subtle {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
+.glass-border-subtle { border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
 
-/* Enhanced glass border hover effects with chromatic aberration */
-.glass-border:hover {
-  filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.1)) drop-shadow(1px 0 2px rgba(0, 255, 0, 0.08))
-    drop-shadow(-1px 0 2px rgba(0, 0, 255, 0.06));
-}
-
-.glass-border-enhanced:hover {
-  filter: drop-shadow(0 0 3px rgba(255, 0, 0, 0.12)) drop-shadow(1px 0 3px rgba(0, 255, 0, 0.1))
-    drop-shadow(-1px 0 3px rgba(0, 0, 255, 0.08));
-}
-
-.glass-border-subtle:hover {
-  filter: drop-shadow(0 0 1px rgba(255, 0, 0, 0.06)) drop-shadow(0.5px 0 1px rgba(0, 255, 0, 0.05))
-    drop-shadow(-0.5px 0 1px rgba(0, 0, 255, 0.04));
-}
+/* Enhanced glass hover effects with chromatic aberration */
+.glass-border:hover { filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.1)) drop-shadow(1px 0 2px rgba(0, 255, 0, 0.08)) drop-shadow(-1px 0 2px rgba(0, 0, 255, 0.06)); }
+.glass-border-enhanced:hover { filter: drop-shadow(0 0 3px rgba(255, 0, 0, 0.12)) drop-shadow(1px 0 3px rgba(0, 255, 0, 0.1)) drop-shadow(-1px 0 3px rgba(0, 0, 255, 0.08)); }
+.glass-border-subtle:hover { filter: drop-shadow(0 0 1px rgba(255, 0, 0, 0.06)) drop-shadow(0.5px 0 1px rgba(0, 255, 0, 0.05)) drop-shadow(-0.5px 0 1px rgba(0, 0, 255, 0.04)); }
 
 /* Logo Marquee Animations - Seamless Infinite Loop */
-@keyframes scroll-right {
-  0% {
-    transform: translateX(-33.333%);
-  }
-  100% {
-    transform: translateX(0%);
-  }
-}
+@keyframes scroll-right { 0% { transform: translateX(-33.333%);} 100% { transform: translateX(0%);} }
+@keyframes scroll-left { 0% { transform: translateX(0%);} 100% { transform: translateX(-33.333%);} }
+.animate-scroll-right { animation: scroll-right 45s linear infinite; }
+.animate-scroll-left { animation: scroll-left 45s linear infinite; }
 
-@keyframes scroll-left {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-33.333%);
-  }
-}
-
-.animate-scroll-right {
-  animation: scroll-right 45s linear infinite;
-}
-
-.animate-scroll-left {
-  animation: scroll-left 45s linear infinite;
-}
-
-/* Hide v0 preview badge (preview-only; not present in production) */
-a[aria-label="Built with v0"],
-a[title="Built with v0"],
-a[href*="v0.dev"].v0-badge,
-a[data-built-with-v0],
-#built-with-v0,
-.v0-built-with {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-/* Extra-aggressive hide for any "Built with v0" or "made with v0" preview badge */
-[aria-label*="v0" i],
-[title*="v0" i],
-[id*="v0" i],
-[class*="v0" i],
-a[href*="v0.dev"],
-a[href*="v0.sh"],
-a[href*="v0.app"],
-a[href*="v0.dev"] *,
-.v0,
-.v0-badge,
-.v0-sticky,
-.v0-watermark,
-.v0-floating-badge,
-.v0-built-with,
-.built-with-v0,
-.built_with_v0,
-[data-built-with="v0"],
-[data-built-with*="v0" i] {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
+/* Hide v0 preview badge */
+a[aria-label="Built with v0"], a[title="Built with v0"], a[href*="v0.dev"].v0-badge, a[data-built-with-v0], #built-with-v0, .v0-built-with { display: none !important; visibility: hidden !important; pointer-events: none !important; }
 
 /* 3D Card Rotation Effects */
-.perspective-1000 {
-  perspective: 1000px;
-}
+.perspective-1000 { perspective: 1000px; }
+.transform-gpu { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+.group-hover\:rotate-y-180:hover { transform: rotateY(180deg); }
 
-.transform-gpu {
-  transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-}
-
-.rotate-y-180 {
-  transform: rotateY(180deg);
-}
-
-.group-hover\:rotate-y-180:hover {
-  transform: rotateY(180deg);
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+  * { animation-duration: 0.3s !important; animation-delay: 0s !important; transition-duration: 0.3s !important; }
+  video { will-change: auto; transform: translateZ(0); backface-visibility: hidden; perspective: 1000px; }
+  .liquid-glass, .liquid-glass-enhanced, .liquid-glass-header, .glass-border, .glass-border-enhanced, .glass-border-subtle { backdrop-filter: blur(10px) saturate(120%); }
+  .animate-scroll-right, .animate-scroll-left { animation-duration: 60s; will-change: transform; }
 }
