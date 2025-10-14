@@ -184,3 +184,13 @@ a[aria-label="Built with v0"], a[title="Built with v0"], a[href*="v0.dev"].v0-ba
 @supports (-webkit-touch-callout: none) {
   .avoid-fixed-bg { background-attachment: scroll !important; }
 }
+
+/* Remove native number input spinners */
+input.no-number-spin[type=number]::-webkit-outer-spin-button,
+input.no-number-spin[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input.no-number-spin[type=number] {
+  -moz-appearance: textfield;
+}

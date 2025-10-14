@@ -404,7 +404,7 @@ export default function EventRegistrationPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <Label htmlFor="name" className="text-gray-300">Full Name *</Label>
+                  <Label htmlFor="name" className="text-gray-300 mb-2 block">Full Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -415,7 +415,7 @@ export default function EventRegistrationPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-gray-300">Email *</Label>
+                  <Label htmlFor="email" className="text-gray-300 mb-2 block">Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -427,7 +427,7 @@ export default function EventRegistrationPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="phone" className="text-gray-300">Phone Number *</Label>
+                  <Label htmlFor="phone" className="text-gray-300 mb-2 block">Phone Number *</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -440,7 +440,7 @@ export default function EventRegistrationPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="roll_no" className="text-gray-300">Roll Number *</Label>
+                  <Label htmlFor="roll_no" className="text-gray-300 mb-2 block">Roll Number *</Label>
                   <Input
                     id="roll_no"
                     value={formData.roll_no}
@@ -452,18 +452,39 @@ export default function EventRegistrationPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="tickets" className="text-gray-300">Number of Tickets *</Label>
-                  <Input
-                    id="tickets"
-                    type="number"
-                    min="1"
-                    max={Math.min(6, event.seats_available)}
-                    value={formData.tickets}
-                    onChange={(e) => handleTicketChange(parseInt(e.target.value) || 1)}
-                    className="bg-gray-900/50 border-gray-700 text-white"
-                    required
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Maximum 6 tickets per registration</p>
+                  <Label htmlFor="tickets" className="text-gray-300 mb-2 block">Number of Tickets *</Label>
+                  <div className="relative">
+                    <Input
+                      id="tickets"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={Math.min(6, event.seats_available)}
+                      value={formData.tickets}
+                      readOnly
+                      className="bg-gray-900/50 border-gray-700 text-white pr-24 text-center no-number-spin"
+                      required
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label="Decrease tickets"
+                        onClick={() => handleTicketChange((formData.tickets || 1) - 1)}
+                        className="h-8 w-8 rounded-full bg-gray-800 border border-gray-700 text-white grid place-items-center hover:bg-gray-700 active:scale-95 transition"
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Increase tickets"
+                        onClick={() => handleTicketChange((formData.tickets || 1) + 1)}
+                        className="h-8 w-8 rounded-full bg-red-600 text-white grid place-items-center hover:bg-red-500 active:scale-95 transition"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Maximum 6 tickets per registration</p>
                 </div>
 
                 {/* Dynamic ticket details */}
