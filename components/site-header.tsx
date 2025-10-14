@@ -10,11 +10,38 @@ import { getAdminToken, removeAdminToken } from "@/lib/admin-auth"
 
 export function SiteHeader() {
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
     const token = getAdminToken()
     setIsAdmin(!!token)
   }, [])
+
+  useEffect(() => {
+    let ticking = false
+    const threshold = 16
+
+    const onScroll = () => {
+      const currentY = Math.max(0, window.scrollY || 0)
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrollingDown = currentY > lastScrollY
+          const movedEnough = Math.abs(currentY - lastScrollY) > threshold
+          if (movedEnough) {
+            setIsHidden(isScrollingDown && currentY > 40)
+            setLastScrollY(currentY)
+          }
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [lastScrollY])
 
   const handleLogout = () => {
     removeAdminToken()
@@ -37,7 +64,7 @@ export function SiteHeader() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 p-4">
+    <header className={`sticky top-0 z-50 p-4 transition-transform duration-300 ease-out will-change-transform ${isHidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className="container mx-auto max-w-4xl">
         <div className="flex h-14 items-center justify-between px-6 liquid-glass-header rounded-full">
           {/* Brand Logo */}
