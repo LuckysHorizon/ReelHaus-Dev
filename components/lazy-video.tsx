@@ -63,19 +63,22 @@ export default function LazyVideo({
   }, [src, autoplay, loaded])
 
   return (
-    <video
-      ref={videoRef}
-      className={`transform-gpu will-change-transform backface-hidden ${className}`}
-      muted={muted}
-      loop={loop}
-      playsInline={playsInline}
-      controls={controls}
-      preload="none"
-      poster={poster}
-      aria-label={ariaLabel}
-      {...props}
-    >
-      Your browser does not support the video tag.
-    </video>
+    <div className={`rv-container ${className}`}>
+      <video
+        ref={videoRef}
+        className="gpu-video will-change-transform backface-hidden"
+        muted={muted}
+        loop={loop}
+        playsInline={playsInline}
+        controls={controls}
+        preload="none"
+        poster={poster}
+        aria-label={ariaLabel}
+        disablePictureInPicture
+        {...props}
+      >
+        Your browser does not support the video tag.
+      </video>
+    </div>
   )
 }

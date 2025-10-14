@@ -175,3 +175,12 @@ a[aria-label="Built with v0"], a[title="Built with v0"], a[href*="v0.dev"].v0-ba
   .liquid-glass, .liquid-glass-enhanced, .liquid-glass-header, .glass-border, .glass-border-enhanced, .glass-border-subtle { backdrop-filter: blur(10px) saturate(120%); }
   .animate-scroll-right, .animate-scroll-left { animation-duration: 60s; will-change: transform; }
 }
+
+/* Device-specific video optimizations */
+.rv-container { contain: layout paint; }
+.gpu-video { transform: translateZ(0); }
+
+/* Avoid fixed backgrounds on iOS to prevent software rendering */
+@supports (-webkit-touch-callout: none) {
+  .avoid-fixed-bg { background-attachment: scroll !important; }
+}
