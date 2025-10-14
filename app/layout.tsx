@@ -3,10 +3,11 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import Plasma from "@/components/plasma"
+import dynamic from "next/dynamic"
 import { QuickNavigation } from "@/components/quick-navigation"
 
-const inter = Inter({ subsets: ["latin"], display: "swap" })
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" })
+const Plasma = dynamic(() => import("@/components/plasma"), { ssr: false, loading: () => null })
 
 export const metadata: Metadata = {
   title: "ReelHaus | Premium Club Events Portal",
@@ -21,17 +22,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en" className={inter.variable}>
       <head>
-        {/* Font Preload */}
-        <link
-          rel="preload"
-          href="/fonts/Inter.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-          fetchPriority="high"
-        />
+        {/* Removed manual font preload to avoid 404; next/font handles preload safely */}
 
         {/* Dynamic Favicon Script */}
         <Script id="dynamic-favicon" strategy="beforeInteractive">
@@ -40,16 +33,11 @@ export default function RootLayout({
               const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
               const faviconHref = darkMode ? '/icons/reelhaus-white.svg' : '/icons/favicon-dark.svg';
               let link = document.querySelector("link[rel~='icon']");
-              if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.getElementsByTagName('head')[0].appendChild(link);
-              }
+              if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
               link.href = faviconHref;
             }
             updateFavicon();
-            // Listen for changes in theme
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
+            window.matchMedia('(prefers-color-scheme: dark)')?.addEventListener('change', updateFavicon);
           `}
         </Script>
 
@@ -67,25 +55,17 @@ export default function RootLayout({
         <Script id="gtag-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-W6LV22900R');
+            function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-W6LV22900R');
           `}
         </Script>
       </head>
       <body>
         <div className="fixed inset-0 z-0 bg-gradient-to-br from-black via-gray-900 to-black">
-          <Plasma
-            color="#DC2626"
-            speed={0.8}
-            direction="forward"
-            scale={1.5}
-            opacity={0.3}
-            mouseInteractive={true}
-          />
+          <Plasma color="#DC2626" speed={0.6} direction="forward" scale={1.4} opacity={0.25} mouseInteractive={false} />
         </div>
         <div className="relative z-10">{children}</div>
         <QuickNavigation />
+        {/* Razorpay only needed on payment routes; keep lazy */}
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
