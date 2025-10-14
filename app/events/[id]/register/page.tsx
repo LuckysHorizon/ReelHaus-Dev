@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar, Clock, Users, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { formatUTCDate, formatUTCTime12 } from "@/lib/utils"
 
 type Event = {
   id: string
@@ -55,6 +56,7 @@ export default function EventRegistrationPage() {
     tickets: 1,
     ticket_details: [{ name: '', roll_no: '', email: '' }]
   })
+
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -357,22 +359,11 @@ export default function EventRegistrationPage() {
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-white" />
-                  <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
+                  <span>{formatUTCDate(event.start_datetime)}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-white" />
-                  <span>{new Date(event.start_datetime).toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })} - {new Date(event.end_datetime).toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}</span>
+                  <span>{formatUTCTime12(event.start_datetime)} - {formatUTCTime12(event.end_datetime)}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-white" />

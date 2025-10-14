@@ -9,6 +9,7 @@ import { ShinyButton } from "@/components/ui/shiny-button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Users, MapPin, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+import { formatUTCDate, formatUTCTime12 } from "@/lib/utils"
 
 type Event = {
   id: string
@@ -29,6 +30,7 @@ export default function EventDetailsPage() {
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -104,22 +106,11 @@ export default function EventDetailsPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3 text-lg">
                   <Calendar className="h-5 w-5 text-white" />
-                  <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
+                  <span>{formatUTCDate(event.start_datetime)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-lg">
                   <Clock className="h-5 w-5 text-white" />
-                  <span>{new Date(event.start_datetime).toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })} - {new Date(event.end_datetime).toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}</span>
+                  <span>{formatUTCTime12(event.start_datetime)} - {formatUTCTime12(event.end_datetime)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-lg">
                   <Users className="h-5 w-5 text-white" />
