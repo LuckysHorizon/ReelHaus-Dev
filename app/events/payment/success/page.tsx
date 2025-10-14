@@ -80,14 +80,10 @@ function PaymentSuccessInner() {
               <CheckCircle2 className="h-12 w-12 text-white animate-bounce" />
             </div>
             <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-clip-text text-transparent animate-pulse">
-              Thanks for Registering!
+              Payment Successful
             </h1>
-            <p className="text-xl text-gray-300 mb-2">
-              Your registration has been confirmed
-            </p>
-            <p className="text-lg text-green-400 font-semibold mb-2">
-              Please check your email for details
-            </p>
+            <p className="text-xl text-gray-300 mb-2">Thank you for registering.</p>
+            <p className="text-lg text-green-400 font-semibold mb-2">Please check your email for details.</p>
             <p className="text-gray-400">
               Payment ID: {paymentId}
             </p>
