@@ -5,13 +5,14 @@ import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
 import { ShinyButton } from "@/components/ui/shiny-button"
-import { CheckCircle2, Download, Mail, QrCode, Calendar, MapPin } from "lucide-react"
+import { CheckCircle2, Download, Mail, QrCode, Calendar, MapPin, Clock } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 
 function PaymentSuccessInner() {
   const searchParams = useSearchParams()
   const paymentId = searchParams.get('payment_id')
   const registrationId = searchParams.get('registration_id')
+  const status = searchParams.get('status')
   
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -51,6 +52,32 @@ function PaymentSuccessInner() {
       link.download = `reelhaus-ticket-${registrationId}.png`
       link.click()
     }
+  }
+
+  if (status === 'failure') {
+    return (
+      <main className="min-h-[100dvh] text-white">
+        <SiteHeader />
+        <div className="container mx-auto px-4 py-20">
+          <div className="max-w-md mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-full mb-6">
+              <CheckCircle2 className="h-10 w-10 text-white rotate-45 opacity-70" />
+            </div>
+            <h1 className="text-4xl font-bold mb-2 text-red-400">Payment Failed</h1>
+            <p className="text-gray-300 mb-6">Your payment could not be verified. If money was deducted, it will be auto-refunded by Razorpay.</p>
+            <div className="space-x-4">
+              <ShinyButton asChild>
+                <a href="/events">Back to Events</a>
+              </ShinyButton>
+              <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
+                <a href="/">Back to Home</a>
+              </ShinyButton>
+            </div>
+          </div>
+        </div>
+        <AppverseFooter />
+      </main>
+    )
   }
 
   if (loading) {

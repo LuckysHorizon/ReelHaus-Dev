@@ -232,18 +232,17 @@ export default function EventRegistrationPage() {
                   })
                 })
 
-                if (verifyResponse.ok) {
-                  // Payment verified successfully
-                  router.push(`/events/payment/success?payment_id=${response.razorpay_payment_id}&registration_id=${data.registration_id}`)
+                const verifyJson = await verifyResponse.json().catch(() => ({}))
+                if (verifyResponse.ok && verifyJson?.success) {
+                  router.push(`/events/payment/success?status=success&payment_id=${response.razorpay_payment_id}&registration_id=${data.registration_id}`)
                 } else {
-                  // Payment verification failed
-                  setError('Payment verification failed. Please contact support.')
-                  setSubmitting(false)
+                  const reason = encodeURIComponent(verifyJson?.error || 'verification_failed')
+                  router.push(`/events/payment/failure?status=failure&reason=${reason}`)
                 }
               } catch (verifyError) {
                 console.error('Payment verification error:', verifyError)
-                setError('Payment verification failed. Please contact support.')
-                setSubmitting(false)
+                const reason = encodeURIComponent('network_error')
+                router.push(`/events/payment/failure?status=failure&reason=${reason}`)
               }
             },
             prefill: {
