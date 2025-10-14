@@ -106,6 +106,7 @@ export function SiteHeader() {
               </SheetTrigger>
               <SheetContent
                 side="right"
+                aria-label="Navigation menu"
                 className="liquid-glass border-gray-800 p-0 w-64 flex flex-col"
               >
                 {/* Brand Header */}

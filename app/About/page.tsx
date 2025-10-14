@@ -1,108 +1,147 @@
+"use client"
+
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
+import { motion } from "motion/react"
 
-export const metadata = {
-  title: "About Us | ReelHaus",
-  description: "Learn about ReelHaus - your premier destination for exclusive club events and experiences.",
-}
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <motion.section
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+    viewport={{ once: true, margin: "-80px" }}
+    className="mb-12"
+  >
+    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white">{title}</h2>
+    <div className="text-gray-300 leading-relaxed space-y-3">{children}</div>
+  </motion.section>
+)
 
 export default function AboutPage() {
   return (
-    <main className="min-h-[100dvh] text-white">
+    <main className="min-h-[100dvh] text-white relative overflow-hidden">
       <SiteHeader />
-      
-      {/* Hero Section */}
-      <section className="relative py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent">
-            About ReelHaus
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            We're passionate about creating unforgettable experiences and bringing people together through exclusive club events.
+
+      {/* Subtle animated background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <motion.div
+          initial={{ opacity: 0.35, scale: 1 }}
+          animate={{ opacity: [0.35, 0.5, 0.35], scale: [1, 1.12, 1], x: [0, 24, 0], y: [0, -16, 0] }}
+          transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+          className="absolute -top-40 -left-40 h-[44rem] w-[44rem] rounded-full bg-red-500/20 blur-3xl"
+        />
+        <motion.div
+          initial={{ opacity: 0.25, scale: 1 }}
+          animate={{ opacity: [0.25, 0.4, 0.25], scale: [1, 1.1, 1], x: [0, -18, 0], y: [0, 14, 0] }}
+          transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, delay: 2 }}
+          className="absolute bottom-[-20rem] right-[-20rem] h-[50rem] w-[50rem] rounded-full bg-purple-500/20 blur-3xl"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 py-16 max-w-5xl">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
+          className="text-4xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-red-400 via-red-300 to-white bg-clip-text text-transparent"
+        >
+          About Reelhaus
+        </motion.h1>
+
+        <Section title="What is Reelhaus?">
+          <p>
+            Reelhaus is a student-led creative powerhouse that fuses brand building, digital marketing, and experiential
+            event design into one relentless engine for cultural impact. We’re not a club that organizes events — we
+            prototyping future-focussed brand experiences, craft digital narratives that stick, and train makers who can turn
+            ideas into campaigns, communities, and measurable growth.
           </p>
-        </div>
-      </section>
+        </Section>
 
-      {/* Mission Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-6 text-red-400">Our Mission</h2>
-              <p className="text-lg text-gray-300 mb-6">
-                At ReelHaus, we believe that great experiences create lasting memories. Our mission is to curate 
-                exceptional club events that bring together like-minded individuals in an atmosphere of excitement, 
-                creativity, and connection.
-              </p>
-              <p className="text-lg text-gray-300">
-                From intimate gatherings to large-scale celebrations, we ensure every event is meticulously planned 
-                and executed to perfection, providing our members with experiences they'll treasure forever.
-              </p>
-            </div>
-            <div className="glass-border-enhanced rounded-2xl p-8">
-              <div className="aspect-video bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🎉</div>
-                  <p className="text-red-400 font-semibold">Creating Memories</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <Section title="Our Mission">
+          <p>
+            To transform bold ideas into magnetic brands and unforgettable experiences. We empower students to master brand
+            strategy, content design, data-driven marketing, and event production — so they can launch campaigns that move
+            people and metrics alike.
+          </p>
+        </Section>
 
-      {/* Values Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-black/50 to-gray-900/50">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold text-center mb-12 text-red-400">Our Values</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-border rounded-xl p-6 text-center">
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-xl font-semibold mb-3 text-red-400">Excellence</h3>
-              <p className="text-gray-300">
-                We strive for excellence in every aspect of our events, from planning to execution.
-              </p>
-            </div>
-            <div className="glass-border rounded-xl p-6 text-center">
-              <div className="text-4xl mb-4">🤝</div>
-              <h3 className="text-xl font-semibold mb-3 text-red-400">Community</h3>
-              <p className="text-gray-300">
-                Building a strong community of members who share our passion for exceptional experiences.
-              </p>
-            </div>
-            <div className="glass-border rounded-xl p-6 text-center">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold mb-3 text-red-400">Innovation</h3>
-              <p className="text-gray-300">
-                Continuously innovating to bring fresh, exciting experiences to our members.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+        <Section title="Our Vision">
+          <p>
+            A campus where every creative concept finds an audience, every student gains hands-on commercial skills, and every
+            event becomes a laboratory for experimentation and real-world impact.
+          </p>
+        </Section>
 
-      {/* Story Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <h2 className="text-4xl font-bold text-center mb-12 text-red-400">Our Story</h2>
-          <div className="glass-border-enhanced rounded-2xl p-8">
-            <p className="text-lg text-gray-300 mb-6">
-              ReelHaus was born from a simple idea: that life's most memorable moments happen when we step out 
-              of our comfort zones and embrace new experiences. Founded by a group of event enthusiasts who 
-              believed that club culture deserved more than just another night out.
-            </p>
-            <p className="text-lg text-gray-300 mb-6">
-              What started as small gatherings among friends has grown into a thriving community of members 
-              who trust us to deliver extraordinary experiences. Every event we create is infused with our 
-              passion for bringing people together and creating moments that matter.
-            </p>
-            <p className="text-lg text-gray-300">
-              Today, ReelHaus stands as a beacon of quality and innovation in the events space, always pushing 
-              boundaries and setting new standards for what a club event can be.
-            </p>
-          </div>
-        </div>
-      </section>
+        <Section title="What We Do">
+          <ul className="list-disc pl-6 space-y-2">
+            <li>
+              <strong>Brand Building:</strong> From naming and positioning to full identity systems — we teach and deliver
+              end-to-end brand creation that’s lean, research-led, and wildly original.
+            </li>
+            <li>
+              <strong>Digital Marketing:</strong> Social strategy, performance campaigns, SEO, influencer collaboratives, analytics
+              dashboards — we run playbooks that are creative and accountable.
+            </li>
+            <li>
+              <strong>Event Management:</strong> We design immersive campus experiences: launch nights, pop-ups, speaker series,
+              product showcases, and hybrid events that blend physical + digital.
+            </li>
+            <li>
+              <strong>Workshops & Labs:</strong> Weekly hands-on workshops cover UX copy, short-form video, analytics, Adobe/Figma
+              toolchains, campaign planning, and pitch practice.
+            </li>
+            <li>
+              <strong>Student Projects & Client Work:</strong> We partner with start-ups, campus clubs, and local SMBs so members get
+              real deliverables, client feedback, and portfolio pieces.
+            </li>
+          </ul>
+        </Section>
+
+        <Section title="Our Approach — Fast, Measured, Human">
+          <ul className="list-disc pl-6 space-y-2">
+            <li><strong>Research First.</strong> We start with people — user discovery, brand audits, and competitive teardown.</li>
+            <li><strong>Prototype Fast.</strong> Rapid creative sprints produce MVP campaigns and event experiences to test assumptions.</li>
+            <li><strong>Measure Relentlessly.</strong> Every campaign has KPIs: reach, engagement, conversion, and brand sentiment.</li>
+            <li><strong>Iterate Boldly.</strong> Data informs design; we refine content and tactics until impact scales.</li>
+          </ul>
+        </Section>
+
+        <Section title="Values">
+          <ul className="grid md:grid-cols-2 gap-3 list-disc pl-6">
+            <li><strong>Curiosity:</strong> We ask better questions than anyone else in the room.</li>
+            <li><strong>Craft:</strong> We obsess over detail — copy, design, timing, and flow.</li>
+            <li><strong>Collaboration:</strong> Great work is cross-disciplinary; everyone ships.</li>
+            <li><strong>Courage:</strong> We back creative risks with rapid learning.</li>
+            <li><strong>Accountability:</strong> Creative ideas must move people and numbers.</li>
+          </ul>
+        </Section>
+
+        <Section title="Impact">
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Multiple campus campaigns that boosted event attendance by 3x and increased social followers by 50% within a semester.</li>
+            <li>Real-world client projects: branding and digital campaigns for local startups and student initiatives.</li>
+          </ul>
+        </Section>
+
+        <Section title="Join Us">
+          <p>
+            If you love storytelling, analytics, design, or the logistics that make large experiences feel effortless — Reelhaus is your lab.
+            We welcome creators, strategists, coders, videographers, and organisers. No prior experience required; only curiosity and hustle.
+          </p>
+          <p>How to join: Drop us a DM on our socials, attend our open workshop night, or apply via the club portal.</p>
+        </Section>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+          className="mt-10 rounded-3xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl text-center"
+        >
+          <p className="text-lg md:text-2xl font-semibold">Build brands. Make noise. Create impact.</p>
+          <p className="text-sm text-gray-400 mt-1">— Reelhaus: Where ideas become experiences.</p>
+        </motion.div>
+      </div>
 
       <AppverseFooter />
     </main>
