@@ -192,11 +192,11 @@ function PaymentSuccessInner() {
           </Card>
 
           {/* Action Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500 w-full sm:w-auto">
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500 w-[82%] sm:w-auto max-w-xs rounded-full py-3 text-sm md:py-4 md:text-base">
               <a href="/events">Browse More Events</a>
             </ShinyButton>
-            <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white w-full sm:w-auto">
+            <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white w-[82%] sm:w-auto max-w-xs rounded-full py-3 text-sm md:py-4 md:text-base">
               <a href="/">Back to Home</a>
             </ShinyButton>
           </div>
