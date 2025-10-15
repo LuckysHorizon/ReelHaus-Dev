@@ -2,7 +2,6 @@
 
 import Image from "next/image"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 type CardData = {
   category: string
@@ -40,16 +39,27 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
   const [current, setCurrent] = useState(0)
   const total = items.length
   const [paused, setPaused] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const wrap = (n: number) => (n + total) % total
 
   const left = wrap(current - 1)
   const right = wrap(current + 1)
 
   useEffect(() => {
-    if (paused) return
+    if (paused || prefersReducedMotion) return
     const id = setInterval(() => setCurrent((c) => wrap(c + 1)), 7000)
     return () => clearInterval(id)
-  }, [paused, total])
+  }, [paused, prefersReducedMotion, total])
+
+  // Respect prefers-reduced-motion
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const apply = () => setPrefersReducedMotion(!!mq.matches)
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  }, [])
 
   // Pause auto-advance when tab is hidden to avoid background CPU/GPU work
   useEffect(() => {
@@ -93,7 +103,9 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
         className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
         onClick={goPrev}
       >
-        <ChevronLeft className="h-5 w-5" />
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
       </button>
 
       <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 px-2">
@@ -104,10 +116,16 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
               key={i}
               className={[
                 "group transition-[transform,opacity,filter] will-change-transform transform-gpu rounded-3xl overflow-visible",
-                "duration-[1400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
+                prefersReducedMotion
+                  ? "duration-300 ease-linear"
+                  : "duration-[1400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
                 isCenter
-                  ? "z-20 scale-[1.02] sm:scale-[1.06] md:scale-[1.1] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:hover:[transform:perspective(1000px)_rotateY(2deg)]"
-                  : "z-10 opacity-60 scale-90 sm:scale-95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]",
+                  ? (prefersReducedMotion
+                      ? "z-20 scale-100 opacity-100 shadow-[0_12px_36px_rgba(0,0,0,0.45)]"
+                      : "z-20 scale-[1.02] sm:scale-[1.06] md:scale-[1.1] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:hover:[transform:perspective(1000px)_rotateY(2deg)]")
+                  : (prefersReducedMotion
+                      ? "z-10 opacity-75 scale-95 shadow-[0_8px_28px_rgba(0,0,0,0.35)]"
+                      : "z-10 opacity-60 scale-90 sm:scale-95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]"),
                 !isCenter && i === 0
                   ? "-translate-x-[1rem] sm:-translate-x-[2.25rem] md:-translate-x-[1.5rem] -rotate-[6deg]"
                   : "",
@@ -116,7 +134,7 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
                   : "",
                 isCenter ? "hover:shadow-[0_24px_72px_rgba(0,0,0,0.55)]" : "",
               ].join(" ")}
-              style={{ transition: "transform 1.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out 0.2s" }}
+              style={{ transition: prefersReducedMotion ? "transform 0.3s linear, opacity 0.2s linear" : "transform 1.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out 0.2s" }}
             >
               <div className={isCenter ? "[&_.title]:opacity-100 [&_.title]:translate-y-0" : "[&_.title]:opacity-60 [&_.title]:translate-y-[10px]"}>
                 {node}
@@ -131,7 +149,9 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
         className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
         onClick={goNext}
       >
-        <ChevronRight className="h-5 w-5" />
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
       </button>
     </div>
   )

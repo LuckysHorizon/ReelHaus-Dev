@@ -107,9 +107,9 @@ export function EventHighlights({ highlights = DEFAULT_HIGHLIGHTS }: { highlight
   }, [isPaused, total])
 
   return (
-    <section ref={containerRef} className="relative isolate py-16 sm:py-20 overflow-visible">
+    <section ref={containerRef} className="relative isolate py-16 sm:py-20 overflow-visible [content-visibility:auto]">
       {/* Heading */}
-      <div className={`container mx-auto px-4 text-center transition-opacity duration-700 ${visible ? "opacity-100" : "opacity-0 translate-y-2"}`}>
+      <div className={`container mx-auto px-4 text-center transition-opacity duration-700 motion-reduce:transition-none ${visible ? "opacity-100" : "opacity-0 translate-y-2"}`}>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
           <span className="text-red-500">Highlights</span> <span className="text-white">from Our Successful Events</span>
         </h2>
@@ -117,7 +117,9 @@ export function EventHighlights({ highlights = DEFAULT_HIGHLIGHTS }: { highlight
 
       {/* Apple-like Cards Carousel */}
       <div className="w-full px-0 md:px-4 mt-8 overflow-hidden md:overflow-visible">
-        <Carousel
+        {/* Lazy-mount carousel after first interaction/scroll to avoid jank on initial paint */}
+        <LazyMount>
+          <Carousel
           items={highlights.map((h, i) => (
             <Card
               key={h.id}
@@ -125,7 +127,8 @@ export function EventHighlights({ highlights = DEFAULT_HIGHLIGHTS }: { highlight
               index={i}
             />
           ))}
-        />
+          />
+        </LazyMount>
       </div>
     </section>
   )
@@ -158,6 +161,39 @@ function CardContent({ item }: { item: Highlight }) {
       <div className="absolute inset-0 rounded-2xl transition-transform duration-300 group-hover:-translate-y-1" />
     </div>
   )
+}
+
+function LazyMount({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const triggered = useRef(false)
+
+  useEffect(() => {
+    const enable = () => {
+      if (triggered.current) return
+      triggered.current = true
+      setMounted(true)
+      window.removeEventListener('scroll', enable)
+      window.removeEventListener('touchstart', enable)
+      window.removeEventListener('keydown', enable)
+    }
+    // Mount on first interaction or scroll
+    window.addEventListener('scroll', enable, { passive: true })
+    window.addEventListener('touchstart', enable, { passive: true })
+    window.addEventListener('keydown', enable)
+
+    // Fallback timer in case there's no interaction but section is above the fold
+    const t = setTimeout(() => enable(), 1200)
+
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('scroll', enable)
+      window.removeEventListener('touchstart', enable)
+      window.removeEventListener('keydown', enable)
+    }
+  }, [])
+
+  if (!mounted) return null
+  return <>{children}</>
 }
 
 
