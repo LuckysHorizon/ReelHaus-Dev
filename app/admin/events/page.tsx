@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { ImageUpload } from "@/components/image-upload"
+import { DatePicker } from "@/components/ui/heroui-shim"
+import { now, getLocalTimeZone } from "@internationalized/date"
 import { 
   Calendar, 
   Users, 
@@ -432,25 +434,42 @@ export default function AdminEventsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="start_datetime" className="text-white mb-2">Start Date & Time *</Label>
-                      <Input
-                        id="start_datetime"
-                        type="datetime-local"
-                        value={formData.start_datetime}
-                        onChange={(e) => setFormData(prev => ({ ...prev, start_datetime: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        required
+                      <Label className="text-white mb-2">Start Date & Time *</Label>
+                      <DatePicker
+                        hideTimeZone
+                        showMonthAndYearPickers
+                        defaultValue={formData.start_datetime ? undefined : now(getLocalTimeZone())}
+                        value={formData.start_datetime ? (new Date(formData.start_datetime) as any) : undefined}
+                        onChange={(val: any) => {
+                          try {
+                            // HeroUI DateValue -> JS Date ISO
+                            const jsDate = (val as any)?.toDate ? (val as any).toDate(getLocalTimeZone()) : undefined
+                            const iso = jsDate ? new Date(jsDate).toISOString() : ''
+                            setFormData(prev => ({ ...prev, start_datetime: iso }))
+                          } catch {
+                            setFormData(prev => ({ ...prev, start_datetime: '' }))
+                          }
+                        }}
+                        variant="bordered"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="end_datetime" className="text-white mb-2">End Date & Time *</Label>
-                      <Input
-                        id="end_datetime"
-                        type="datetime-local"
-                        value={formData.end_datetime}
-                        onChange={(e) => setFormData(prev => ({ ...prev, end_datetime: e.target.value }))}
-                        className="bg-gray-900/50 border-gray-700 text-white"
-                        required
+                      <Label className="text-white mb-2">End Date & Time *</Label>
+                      <DatePicker
+                        hideTimeZone
+                        showMonthAndYearPickers
+                        defaultValue={formData.end_datetime ? undefined : now(getLocalTimeZone())}
+                        value={formData.end_datetime ? (new Date(formData.end_datetime) as any) : undefined}
+                        onChange={(val: any) => {
+                          try {
+                            const jsDate = (val as any)?.toDate ? (val as any).toDate(getLocalTimeZone()) : undefined
+                            const iso = jsDate ? new Date(jsDate).toISOString() : ''
+                            setFormData(prev => ({ ...prev, end_datetime: iso }))
+                          } catch {
+                            setFormData(prev => ({ ...prev, end_datetime: '' }))
+                          }
+                        }}
+                        variant="bordered"
                       />
                     </div>
                   </div>

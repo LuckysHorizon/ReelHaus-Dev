@@ -21,7 +21,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-[100dvh] text-white relative overflow-hidden">
       <SiteHeader />
-
+      
       {/* Subtle animated background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <motion.div
@@ -36,7 +36,7 @@ export default function AboutPage() {
           transition={{ duration: 22, ease: "easeInOut", repeat: Infinity, delay: 2 }}
           className="absolute bottom-[-20rem] right-[-20rem] h-[50rem] w-[50rem] rounded-full bg-purple-500/20 blur-3xl"
         />
-      </div>
+        </div>
 
       <div className="container mx-auto px-4 py-16 max-w-5xl">
         <motion.h1
@@ -141,7 +141,7 @@ export default function AboutPage() {
           <p className="text-lg md:text-2xl font-semibold">Build brands. Make noise. Create impact.</p>
           <p className="text-sm text-gray-400 mt-1">— Reelhaus: Where ideas become experiences.</p>
         </motion.div>
-      </div>
+        </div>
 
       <AppverseFooter />
     </main>
