@@ -57,10 +57,16 @@ export function AppverseFooter() {
               <div>
                 <h5 className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">Navigation</h5>
                 <ul className="space-y-2 text-sm text-neutral-300">
-                  {["Home", "About Us", "Team", "Join Us", "Events"].map((item) => (
-                    <li key={item}>
-                      <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-red-400">
-                        {item}
+                  {[
+                    { label: "Home", href: "/" },
+                    { label: "About Us", href: "/about" },
+                    { label: "Team", href: "/team" },
+                    { label: "Join Us", href: "/join" },
+                    { label: "Events", href: "/events" },
+                  ].map((item) => (
+                    <li key={item.label}>
+                      <Link href={item.href} className="hover:text-red-400">
+                        {item.label}
                       </Link>
                     </li>
                   ))}
@@ -95,7 +101,7 @@ export function AppverseFooter() {
                   <li className="flex items-center gap-2">
                     <Twitter className="h-4 w-4 text-neutral-400" />
                     <a
-                      href="https://twitter.com/reelhaus"
+                      href="https://x.com/your-handle"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-red-400"
@@ -107,7 +113,7 @@ export function AppverseFooter() {
                   <li className="flex items-center gap-2">
                     <Youtube className="h-4 w-4 text-neutral-400" />
                     <a
-                      href="https://www.youtube.com/@reelhaus"
+                      href="https://youtube.com/@your-handle"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-red-400"
@@ -119,7 +125,7 @@ export function AppverseFooter() {
                   <li className="flex items-center gap-2">
                     <Instagram className="h-4 w-4 text-neutral-400" />
                     <a
-                      href="https://instagram.com/reelhaus"
+                      href="https://www.instagram.com/reelhaus.hyd?igsh=MTZ3bjlyZXY2d2sxaw=="
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-red-400"
@@ -131,7 +137,7 @@ export function AppverseFooter() {
                   <li className="flex items-center gap-2">
                     <MessageCircle className="h-4 w-4 text-neutral-400" />
                     <a
-                      href="https://threads.com/reelhaus"
+                      href="https://www.threads.net/@your-handle"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-red-400"
