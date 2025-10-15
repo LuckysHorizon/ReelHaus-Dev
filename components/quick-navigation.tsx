@@ -7,7 +7,6 @@ import {
   Home, 
   Calendar, 
   Users, 
-  FileText, 
   Info, 
   UserPlus, 
   Settings,
@@ -20,7 +19,6 @@ const quickNavItems = [
   { href: '/about', label: 'About', icon: Info },
   { href: '/team', label: 'Team', icon: Users },
   { href: '/join', label: 'Join', icon: UserPlus },
-  { href: '/blog', label: 'Blog', icon: FileText },
 ]
 
 export function QuickNavigation() {

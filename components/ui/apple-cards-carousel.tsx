@@ -97,10 +97,10 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
         setTimeout(() => setPaused(false), 300)
       }}
     >
-      {/* Desktop arrows */}
+      {/* Arrows (mobile + desktop) */}
       <button
         aria-label="Prev"
-        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+        className="flex absolute left-1 md:left-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
         onClick={goPrev}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -146,7 +146,7 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
 
       <button
         aria-label="Next"
-        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+        className="flex absolute right-1 md:right-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
         onClick={goNext}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

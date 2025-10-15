@@ -57,7 +57,7 @@ export function AppverseFooter() {
               <div>
                 <h5 className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">Navigation</h5>
                 <ul className="space-y-2 text-sm text-neutral-300">
-                  {["Home", "About Us", "Team", "Join Us", "Blog", "Events"].map((item) => (
+                  {["Home", "About Us", "Team", "Join Us", "Events"].map((item) => (
                     <li key={item}>
                       <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-red-400">
                         {item}
