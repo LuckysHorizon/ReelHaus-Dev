@@ -95,10 +95,10 @@ function PaymentSuccessInner() {
         <div className="max-w-4xl mx-auto">
           {/* Success Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-green-500 to-green-600 rounded-full mb-6 animate-pulse">
-              <CheckCircle2 className="h-12 w-12 text-white animate-bounce" />
+            <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full mb-6 bg-green-600/90 shadow-[0_8px_40px_rgba(16,185,129,0.25)]">
+              <CheckCircle2 className="h-10 w-10 md:h-12 md:w-12 text-white" />
             </div>
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-clip-text text-transparent animate-pulse">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-green-500">
               Payment Successful
             </h1>
             <p className="text-xl text-gray-300 mb-2">Thank you for registering.</p>
@@ -169,22 +169,22 @@ function PaymentSuccessInner() {
           {/* Next Steps */}
           <Card className="glass-border-enhanced p-6 mt-8">
             <h2 className="text-xl font-semibold mb-4 text-red-400">What's Next?</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-red-500/20 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="text-center px-2">
+                <div className="bg-red-500/15 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
                   <Mail className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Email Confirmation</h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 max-w-xs mx-auto">
                   A confirmation email with your ticket details has been sent to {registrationData?.email}
                 </p>
               </div>
-              <div className="text-center">
-                <div className="bg-red-500/20 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+              <div className="text-center px-2">
+                <div className="bg-red-500/15 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
                   <Calendar className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Event Day</h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 max-w-xs mx-auto">
                   Arrive 30 minutes early and keep your email confirmation accessible
                 </p>
               </div>
@@ -192,11 +192,11 @@ function PaymentSuccessInner() {
           </Card>
 
           {/* Action Buttons */}
-          <div className="text-center mt-8 space-x-4">
-            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
+          <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <ShinyButton asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500 w-full sm:w-auto">
               <a href="/events">Browse More Events</a>
             </ShinyButton>
-            <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
+            <ShinyButton asChild variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white w-full sm:w-auto">
               <a href="/">Back to Home</a>
             </ShinyButton>
           </div>
