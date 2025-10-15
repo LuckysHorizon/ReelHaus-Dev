@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { ShinyButton } from "@/components/ui/shiny-button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -105,10 +106,13 @@ export function Pricing() {
               className="relative overflow-hidden rounded-2xl liquid-glass shadow-[0_12px_40px_rgba(0,0,0,0.3)] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={event.cover_image_url || '/placeholder.jpg'} 
+                <Image
+                  src={event.cover_image_url || '/placeholder.jpg'}
                   alt={event.title || 'Event'}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                  priority={false}
                 />
                 <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-yellow-300">
                   {event.seats_available || 0} seats left

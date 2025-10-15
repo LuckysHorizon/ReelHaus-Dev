@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { Card } from "@/components/ui/card"
@@ -550,10 +551,14 @@ export default function AdminEventsPage() {
             <Card key={event.id} className="glass-border-enhanced overflow-hidden">
               <div className="relative">
                 {event.cover_image_url && (
-                  <img 
-                    src={event.cover_image_url} 
+                  <Image
+                    src={event.cover_image_url}
                     alt={event.title}
+                    width={1200}
+                    height={600}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="w-full h-48 object-cover"
+                    priority={false}
                   />
                 )}
                 <div className="absolute top-4 right-4">

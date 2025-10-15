@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Head from "next/head"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
@@ -123,10 +124,13 @@ export default function EventsPage() {
               events.map((event) => (
               <Card key={event.id} className="glass-border-enhanced overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
                 <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={event.cover_image_url} 
+                  <Image
+                    src={event.cover_image_url}
                     alt={event.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    priority={false}
                   />
                   <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-yellow-300">
                     {event.seats_available} seats left
