@@ -166,7 +166,8 @@ a[aria-label="Built with v0"], a[title="Built with v0"], a[href*="v0.dev"].v0-ba
 .transform-gpu { transform-style: preserve-3d; }
 .backface-hidden { backface-visibility: hidden; }
 .rotate-y-180 { transform: rotateY(180deg); }
-.group-hover\:rotate-y-180:hover { transform: rotateY(180deg); }
+/* Ensure group hover flips child with class `group-hover:rotate-y-180` */
+.group:hover .group-hover\:rotate-y-180 { transform: rotateY(180deg); }
 
 /* Mobile Performance Optimizations */
 @media (max-width: 768px) {

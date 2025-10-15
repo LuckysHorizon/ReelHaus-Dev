@@ -4,6 +4,7 @@ import { AppverseFooter } from "@/components/appverse-footer"
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card"
 import { ShinyButton } from "@/components/ui/shiny-button"
 import Image from "next/image"
+import { TeamCardFlip } from "@/components/ui/team-card-flip"
 
 export const metadata = {
   title: "Core Team | ReelHaus",
@@ -179,13 +180,17 @@ export default function TeamPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
-              <div key={index} className="group perspective-1000">
-                <div className="relative w-full h-96 transform-gpu transition-transform duration-1000 ease-in-out group-hover:rotate-y-180">
+              <div
+                key={index}
+                className="group perspective-1000 select-none"
+                style={{ perspective: '1000px' }}
+              >
+                <TeamCardFlip>
                   {/* Front of card */}
-                  <div className="absolute inset-0 w-full h-full backface-hidden">
-                    <div className="h-96 w-full cursor-pointer relative overflow-hidden rounded-2xl border-2 border-transparent group-hover:border-red-500 group-hover:shadow-[0_0_20px_rgba(255,0,0,0.5)] transition-all duration-1000">
+                  <div className="absolute inset-0 w-full h-full backface-hidden" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' as any }}>
+                    <div className="h-96 w-full relative overflow-hidden rounded-2xl border-2 border-transparent transition-all duration-300 md:duration-1000 md:group-hover:border-red-500 md:group-hover:shadow-[0_0_20px_rgba(255,0,0,0.5)] motion-reduce:transition-none">
                       {/* Background Image */}
-                      <div className="absolute inset-0 z-0">
+                      <div className="absolute inset-0 z-0 pointer-events-none">
                         <Image 
                           src={member.photo} 
                           alt={member.name}
@@ -197,7 +202,7 @@ export default function TeamPage() {
                       </div>
                       
                       {/* Footer Content */}
-                      <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/80 to-transparent text-center">
+                      <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/80 to-transparent text-center pointer-events-none">
                         {/* Name */}
                         <h3 className="text-xl font-bold text-white leading-tight drop-shadow-lg">
                           {member.name}
@@ -212,8 +217,8 @@ export default function TeamPage() {
                   </div>
                   
                   {/* Back of card - Details */}
-                  <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
-                    <div className="h-96 w-full cursor-pointer relative overflow-hidden rounded-2xl border-2 border-red-500 shadow-[0_0_30px_rgba(255,0,0,0.8)] bg-gradient-to-br from-gray-900 to-black">
+                  <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' as any }}>
+                    <div className="h-96 w-full relative overflow-hidden rounded-2xl border-2 border-red-500 shadow-[0_0_30px_rgba(255,0,0,0.6)] bg-gradient-to-br from-gray-900 to-black motion-reduce:transition-none">
                       {/* Content */}
                       <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 space-y-4">
                         {/* Name */}
@@ -238,7 +243,7 @@ export default function TeamPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </TeamCardFlip>
               </div>
             ))}
           </div>
@@ -298,3 +303,5 @@ export default function TeamPage() {
     </main>
   )
 }
+
+// flip logic moved to client component TeamCardFlip
