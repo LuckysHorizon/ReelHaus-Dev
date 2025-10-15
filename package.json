@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@internationalized/date": "^3.10.0",
     "@heroui/date-picker": "^2.3.28",
     "@heroui/system": "^2.4.23",
     "@heroui/theme": "^2.4.23",
