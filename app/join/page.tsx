@@ -1,3 +1,4 @@
+import React from "react"
 import { SiteHeader } from "@/components/site-header"
 import { AppverseFooter } from "@/components/appverse-footer"
 import { ShinyButton } from "@/components/ui/shiny-button"
@@ -5,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { JoinCareersList } from "@/components/join-careers-list"
 
 export const metadata = {
   title: "Join Us | ReelHaus",
@@ -93,32 +95,11 @@ export default function JoinPage() {
 
       {/* Membership Form removed as requested */}
 
-      {/* Career Opportunities */}
+      {/* Career Opportunities (fetched from API) */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-4xl font-bold text-center mb-12 text-red-400">Career Opportunities</h2>
-          <div className="space-y-6">
-            {openPositions.map((position, index) => (
-              <Card key={index} className="glass-border-enhanced p-6 hover:scale-[1.02] transition-transform">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div className="mb-4 md:mb-0">
-                    <h3 className="text-xl font-semibold text-red-400 mb-2">{position.title}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-300">
-                      <span>{position.department}</span>
-                      <span>•</span>
-                      <span>{position.location}</span>
-                      <span>•</span>
-                      <span>{position.type}</span>
-                    </div>
-                    <p className="text-gray-300 mt-2">{position.description}</p>
-                  </div>
-                  <ShinyButton>
-                    Apply Now
-                  </ShinyButton>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <JoinCareersList />
         </div>
       </section>
 

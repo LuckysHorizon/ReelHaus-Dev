@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ShinyButton } from "@/components/ui/shiny-button"
+import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import Image from "next/image"
 import { Menu, Briefcase, Tag, HelpCircle, FileText, Info, UserCog, LogOut } from "lucide-react"
@@ -60,6 +61,7 @@ export function SiteHeader() {
   const adminLinks = [
     { href: "/admin/dashboard", label: "Dashboard", icon: UserCog },
     { href: "/admin/events", label: "Events", icon: Briefcase },
+    { href: "/admin/careers", label: "Careers", icon: FileText },
     { href: "/admin/registrations", label: "Registrations", icon: Tag },
   ]
 
@@ -92,14 +94,14 @@ export function SiteHeader() {
                     {l.label}
                   </Link>
                 ))}
-                <ShinyButton
+                <Button
                   onClick={handleLogout}
                   variant="outline"
-                  className="text-sm px-4 py-2"
+                  className="text-sm px-4 py-2 rounded-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
-                </ShinyButton>
+                </Button>
               </>
             ) : (
               <>

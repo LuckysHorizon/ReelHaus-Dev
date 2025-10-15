@@ -215,6 +215,35 @@ export interface Database {
           generated_by?: string | null
         }
       }
+      ,career_opportunities: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          google_form_url: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          google_form_url: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          google_form_url?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
