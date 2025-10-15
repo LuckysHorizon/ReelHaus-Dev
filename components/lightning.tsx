@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import "./Lightning.css"
 
 interface LightningProps {
@@ -14,6 +14,8 @@ interface LightningProps {
 
 const Lightning: React.FC<LightningProps> = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const inViewRef = useRef(false)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -26,7 +28,25 @@ const Lightning: React.FC<LightningProps> = ({ hue = 230, xOffset = 0, speed = 1
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
 
-    const gl = canvas.getContext("webgl")
+    // Observe visibility to pause when offscreen
+    const io = new IntersectionObserver((entries) => {
+      inViewRef.current = entries[0]?.isIntersecting ?? false
+    }, { rootMargin: "200px 0px" })
+    io.observe(canvas)
+
+    // Prefers-reduced-motion gate
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const applyMR = () => setPrefersReducedMotion(!!mq.matches)
+    applyMR()
+    mq.addEventListener?.('change', applyMR)
+
+    // Pause when tab hidden
+    const onVisibility = () => {
+      // nothing required here; checked inside loop
+    }
+    document.addEventListener('visibilitychange', onVisibility, { passive: true } as any)
+
+    const gl = canvas.getContext("webgl", { preserveDrawingBuffer: false, antialias: false })
     if (!gl) {
       console.error("WebGL not supported")
       return
@@ -165,7 +185,24 @@ const Lightning: React.FC<LightningProps> = ({ hue = 230, xOffset = 0, speed = 1
     const uSizeLocation = gl.getUniformLocation(program, "uSize")
 
     const startTime = performance.now()
-    const render = () => {
+    let lastFrame = 0
+    const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false
+    const targetFps = prefersReducedMotion ? 15 : (isMobile ? 30 : 60)
+    const frameInterval = 1000 / targetFps
+
+    const render = (t: number) => {
+      // Skip rendering when tab hidden or offscreen
+      if (document.hidden || !inViewRef.current || prefersReducedMotion) {
+        lastFrame = t
+        requestAnimationFrame(render)
+        return
+      }
+      const delta = t - lastFrame
+      if (delta < frameInterval) {
+        requestAnimationFrame(render)
+        return
+      }
+
       resizeCanvas()
       gl.viewport(0, 0, canvas.width, canvas.height)
       gl.uniform2f(iResolutionLocation, canvas.width, canvas.height)
@@ -177,16 +214,20 @@ const Lightning: React.FC<LightningProps> = ({ hue = 230, xOffset = 0, speed = 1
       gl.uniform1f(uIntensityLocation, intensity)
       gl.uniform1f(uSizeLocation, size)
       gl.drawArrays(gl.TRIANGLES, 0, 6)
+      lastFrame = t
       requestAnimationFrame(render)
     }
     requestAnimationFrame(render)
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
+      document.removeEventListener('visibilitychange', onVisibility as any)
+      mq.removeEventListener?.('change', applyMR)
+      try { io.disconnect() } catch {}
     }
-  }, [hue, xOffset, speed, intensity, size])
+  }, [hue, xOffset, speed, intensity, size, prefersReducedMotion])
 
-  return <canvas ref={canvasRef} className="lightning-container" />
+  return <canvas ref={canvasRef} className="lightning-container" style={{ isolation: 'isolate', contain: 'layout paint' as any }} />
 }
 
 export default Lightning

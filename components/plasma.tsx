@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Renderer, Program, Mesh, Triangle } from "ogl"
 import "./Plasma.css"
 
@@ -105,6 +105,8 @@ export const Plasma: React.FC<PlasmaProps> = ({
   mouseInteractive = true,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const inViewRef = useRef(false)
   const mousePos = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -185,18 +187,28 @@ export const Plasma: React.FC<PlasmaProps> = ({
     let raf = 0
     let lastTime = 0
     const t0 = performance.now()
+    const targetFps = prefersReducedMotion ? 15 : (isIOS || isMobile ? 30 : 60)
+    const frameInterval = 1000 / targetFps
     const loop = (t: number) => {
-      const delta = t - lastTime
-      if (!isIOS || delta > 33) { // 60fps desktop, ~30fps iOS
-        const timeValue = (t - t0) * 0.001
-        if (direction === "pingpong") {
-          const cycle = Math.sin(timeValue * 0.5) * directionMultiplier
-          ;(program.uniforms.uDirection as any).value = cycle
-        }
-        ;(program.uniforms.iTime as any).value = timeValue
-        renderer.render({ scene: mesh })
+      // Pause when hidden or offscreen
+      if (document.hidden || !inViewRef.current || prefersReducedMotion) {
         lastTime = t
+        raf = requestAnimationFrame(loop)
+        return
       }
+      const delta = t - lastTime
+      if (delta < frameInterval) {
+        raf = requestAnimationFrame(loop)
+        return
+      }
+      const timeValue = (t - t0) * 0.001
+      if (direction === "pingpong") {
+        const cycle = Math.sin(timeValue * 0.5) * directionMultiplier
+        ;(program.uniforms.uDirection as any).value = cycle
+      }
+      ;(program.uniforms.iTime as any).value = timeValue
+      renderer.render({ scene: mesh })
+      lastTime = t
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
@@ -211,9 +223,30 @@ export const Plasma: React.FC<PlasmaProps> = ({
         containerRef.current?.removeChild(canvas)
       } catch {}
     }
-  }, [color, speed, direction, scale, opacity, mouseInteractive])
+  }, [color, speed, direction, scale, opacity, mouseInteractive, prefersReducedMotion])
 
-  return <div ref={containerRef} className="plasma-container pointer-events-none will-change-transform" />
+  // Visibility observer and reduced-motion gate
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const io = new IntersectionObserver((entries) => {
+      inViewRef.current = entries[0]?.isIntersecting ?? false
+    }, { rootMargin: '200px 0px' })
+    io.observe(el)
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const apply = () => setPrefersReducedMotion(!!mq.matches)
+    apply()
+    mq.addEventListener?.('change', apply)
+    const onVis = () => {}
+    document.addEventListener('visibilitychange', onVis, { passive: true } as any)
+    return () => {
+      try { io.disconnect() } catch {}
+      mq.removeEventListener?.('change', apply)
+      document.removeEventListener('visibilitychange', onVis as any)
+    }
+  }, [])
+
+  return <div ref={containerRef} className="plasma-container pointer-events-none will-change-transform" style={{ isolation: 'isolate', contain: 'layout paint' as any }} />
 }
 
 export default Plasma
