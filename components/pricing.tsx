@@ -76,7 +76,11 @@ export function Pricing() {
   }
 
   return (
-    <section id="events" className="text-white">
+    <section
+      id="events"
+      className="text-white motion-reduce:transition-none"
+      style={{ contentVisibility: 'auto' as any, containIntrinsicSize: '1200px' as any }}
+    >
       <div className="container mx-auto px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-3xl text-center">
           <div
@@ -93,7 +97,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 [content-visibility:auto]">
           {events.length === 0 ? (
             <div className="col-span-full text-center py-16">
               <h3 className="text-2xl font-semibold text-gray-400 mb-4">No Events Available</h3>
@@ -103,7 +107,7 @@ export function Pricing() {
             events.map((event) => (
             <Card
               key={event.id}
-              className="relative overflow-hidden rounded-2xl liquid-glass shadow-[0_12px_40px_rgba(0,0,0,0.3)] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              className="relative overflow-hidden rounded-2xl liquid-glass shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all duration-200 md:hover:scale-[1.02] md:active:scale-[0.98]"
             >
               <div className="relative h-48 overflow-hidden">
                 <Image

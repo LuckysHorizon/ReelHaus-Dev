@@ -170,13 +170,20 @@ a[aria-label="Built with v0"], a[title="Built with v0"], a[href*="v0.dev"].v0-ba
 
 /* Mobile Performance Optimizations */
 @media (max-width: 768px) {
-  * { animation-duration: 0.3s !important; animation-delay: 0s !important; transition-duration: 0.3s !important; }
+  * { animation-duration: 0.25s !important; animation-delay: 0s !important; transition-duration: 0.25s !important; }
   video { will-change: auto; transform: translateZ(0); backface-visibility: hidden; perspective: 1000px; }
-  .liquid-glass, .liquid-glass-enhanced, .liquid-glass-header, .glass-border, .glass-border-enhanced, .glass-border-subtle { backdrop-filter: blur(10px) saturate(120%); }
-  .animate-scroll-right, .animate-scroll-left { animation-duration: 60s; will-change: transform; }
-  /* De-emphasize heavy drop-shadows on mobile to reduce GPU work */
-  .shadow-[0_20px_60px_rgba(0,0,0,0.5)] { box-shadow: 0 14px 40px rgba(0,0,0,0.4) !important; }
-  .shadow-[0_24px_72px_rgba(0,0,0,0.55)] { box-shadow: 0 16px 46px rgba(0,0,0,0.45) !important; }
+  /* Soften glass effects on mobile to reduce offscreen blurs */
+  .liquid-glass, .liquid-glass-enhanced, .liquid-glass-header, .glass-border, .glass-border-enhanced, .glass-border-subtle { backdrop-filter: blur(6px) saturate(110%) !important; }
+  /* Pause infinite marquee animations on mobile to avoid scroll jank */
+  .animate-scroll-right, .animate-scroll-left { animation-play-state: paused !important; will-change: auto !important; }
+  /* Disable chromatic hover filters on mobile */
+  .glass-border:hover, .glass-border-enhanced:hover, .glass-border-subtle:hover { filter: none !important; }
+}
+
+/* High-density / high-refresh displays: make transitions slightly gentler */
+@media (min-width: 769px) and (min-resolution: 2dppx) {
+  .animate-scroll-right, .animate-scroll-left { animation-duration: 55s; }
+  .glass-border, .glass-border-enhanced, .glass-border-subtle { backdrop-filter: blur(16px) saturate(160%); }
 }
 
 /* Device-specific video optimizations */
