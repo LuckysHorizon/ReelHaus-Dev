@@ -313,10 +313,10 @@ export default function AdminEventsPage() {
     <main className="min-h-[100dvh] text-white">
       <SiteHeader />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button 
               onClick={() => router.push('/admin/dashboard')}
               variant="outline"
@@ -334,7 +334,7 @@ export default function AdminEventsPage() {
           </div>
           <Button
             onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500"
+            className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500 w-full sm:w-auto rounded-full px-4 py-2"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Event
@@ -343,10 +343,10 @@ export default function AdminEventsPage() {
 
         {/* Event Form Modal */}
         {showForm && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="glass-border-enhanced w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+            <Card className="glass-border-enhanced w-full max-w-[680px] max-h-[92vh] overflow-y-auto">
               <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold text-red-400">
                     {editingEvent ? 'Edit Event' : 'Create New Event'}
                   </h2>
@@ -372,10 +372,10 @@ export default function AdminEventsPage() {
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title" className="text-red-400">
+                      <Label htmlFor="title" className="text-white mb-2">
                         Event Title <span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -400,22 +400,21 @@ export default function AdminEventsPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="currency" className="text-red-400">Currency</Label>
+                      <Label htmlFor="currency" className="text-white mb-2">Currency</Label>
                       <select
                         id="currency"
                         value={formData.currency}
-                        onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
-                        className="w-full p-2 bg-gray-900/50 border border-gray-700 rounded-md text-white"
+                        onChange={(e) => setFormData(prev => ({ ...prev, currency: 'INR' }))}
+                        disabled
+                        className="w-full p-2 bg-gray-900/50 border border-gray-700 rounded-md text-white disabled:opacity-70"
                       >
                         <option value="INR">INR (₹)</option>
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="description" className="text-red-400">Description</Label>
+                    <Label htmlFor="description" className="text-white mb-2">Description</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
@@ -431,9 +430,9 @@ export default function AdminEventsPage() {
                     onError={(error) => setError(error)}
                   />
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="start_datetime" className="text-red-400">Start Date & Time *</Label>
+                      <Label htmlFor="start_datetime" className="text-white mb-2">Start Date & Time *</Label>
                       <Input
                         id="start_datetime"
                         type="datetime-local"
@@ -444,7 +443,7 @@ export default function AdminEventsPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="end_datetime" className="text-red-400">End Date & Time *</Label>
+                      <Label htmlFor="end_datetime" className="text-white mb-2">End Date & Time *</Label>
                       <Input
                         id="end_datetime"
                         type="datetime-local"
@@ -456,17 +455,21 @@ export default function AdminEventsPage() {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="seats_total" className="text-red-400">
+                      <Label htmlFor="seats_total" className="text-white mb-2">
                         Total Seats <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="seats_total"
-                        type="number"
-                        min="1"
-                        value={formData.seats_total}
-                        onChange={(e) => setFormData(prev => ({ ...prev, seats_total: parseInt(e.target.value) || 0 }))}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={formData.seats_total === 0 ? '' : formData.seats_total}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D+/g, '')
+                          setFormData(prev => ({ ...prev, seats_total: digits === '' ? 0 : parseInt(digits) }))
+                        }}
                         className={`bg-gray-900/50 text-white ${
                           formErrors.seats_total 
                             ? 'border-red-500 focus:border-red-400' 
@@ -480,27 +483,28 @@ export default function AdminEventsPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="price_cents" className="text-red-400">
+                      <Label htmlFor="price_cents" className="text-white mb-2">
                         Price (₹) <span className="text-red-500">*</span>
                       </Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₹</span>
-                        <Input
-                          id="price_cents"
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={formData.price_cents / 100}
-                          onChange={(e) => setFormData(prev => ({ ...prev, price_cents: Math.round((parseFloat(e.target.value) || 0) * 100) }))}
-                          className={`bg-gray-900/50 text-white pl-8 ${
-                            formErrors.price_cents 
-                              ? 'border-red-500 focus:border-red-400' 
-                              : 'border-gray-700 focus:border-red-400'
-                          }`}
-                          placeholder="1500"
-                          required
-                        />
-                      </div>
+                      <Input
+                        id="price_cents"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={formData.price_cents === 0 ? '' : Math.round(formData.price_cents / 100).toString()}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D+/g, '')
+                          const rupees = digits === '' ? 0 : parseInt(digits)
+                          setFormData(prev => ({ ...prev, price_cents: rupees * 100 }))
+                        }}
+                        className={`bg-gray-900/50 text-white ${
+                          formErrors.price_cents 
+                            ? 'border-red-500 focus:border-red-400' 
+                            : 'border-gray-700 focus:border-red-400'
+                        }`}
+                        placeholder="1500"
+                        required
+                      />
                       {formErrors.price_cents && (
                         <p className="text-red-400 text-sm mt-1">{formErrors.price_cents}</p>
                       )}
@@ -518,10 +522,10 @@ export default function AdminEventsPage() {
                       onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
                       className="rounded border-gray-700 bg-gray-900/50 text-red-500"
                     />
-                    <Label htmlFor="is_active" className="text-red-400">Active Event</Label>
+                    <Label htmlFor="is_active" className="text-white">Active Event</Label>
                   </div>
 
-                  <div className="flex gap-4 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-3">
                     <Button 
                       type="submit"
                       disabled={saving}
@@ -546,7 +550,7 @@ export default function AdminEventsPage() {
         )}
 
         {/* Events Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
             <Card key={event.id} className="glass-border-enhanced overflow-hidden">
               <div className="relative">

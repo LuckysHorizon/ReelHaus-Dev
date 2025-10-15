@@ -216,11 +216,9 @@ export default function AdminDashboardPage() {
               <Database className={`h-4 w-4 mr-2 ${seeding ? 'animate-pulse' : ''}`} />
               {seeding ? 'Seeding...' : 'Seed Data'}
             </Button>
-            <Button asChild className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500">
-              <a href="/admin/events/new">
-                <Plus className="h-4 w-4 mr-2" />
-                New Event
-              </a>
+            <Button className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500" onClick={() => router.push('/admin/events')}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Event
             </Button>
             <Button 
               onClick={handleLogout}

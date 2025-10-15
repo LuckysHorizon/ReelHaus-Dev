@@ -174,10 +174,10 @@ export default function AdminRegistrationsPage() {
     <main className="min-h-[100dvh] text-white">
       <SiteHeader />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button 
               onClick={() => router.push('/admin/dashboard')}
               variant="outline"
@@ -195,7 +195,7 @@ export default function AdminRegistrationsPage() {
           </div>
           <Button 
             onClick={handleExport}
-            className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-400 hover:to-green-500"
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-400 hover:to-green-500 w-full sm:w-auto rounded-full"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Excel
@@ -203,8 +203,8 @@ export default function AdminRegistrationsPage() {
         </div>
 
         {/* Filters */}
-        <Card className="glass-border-enhanced p-6 mb-8">
-          <div className="grid md:grid-cols-4 gap-4">
+        <Card className="glass-border-enhanced p-5 sm:p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-red-400 mb-2">Search</label>
               <div className="relative">
@@ -248,21 +248,12 @@ export default function AdminRegistrationsPage() {
               </select>
             </div>
             
-            <div className="flex items-end">
-              <Button 
-                onClick={() => fetchRegistrations(getAdminToken()!)}
-                variant="outline"
-                className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white w-full"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
+            {/* Refresh button removed as requested */}
           </div>
         </Card>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           <Card className="glass-border-enhanced p-6">
             <div className="flex items-center justify-between">
               <div>

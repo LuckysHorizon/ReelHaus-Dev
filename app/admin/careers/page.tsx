@@ -96,23 +96,20 @@ export default function AdminCareersPage() {
     <main className="min-h-[100dvh] text-white">
       <SiteHeader />
 
-      <section className="py-10 px-4">
+      <section className="py-8 px-3 sm:px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <h1 className="text-3xl md:text-4xl font-bold">Manage Career Opportunities</h1>
-            <div className="flex gap-2">
-              <Button onClick={fetchItems} variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={fetchItems} variant="outline" className="w-full sm:w-auto border-gray-700 text-gray-300 hover:bg-gray-800">
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
-              </Button>
-              <Button onClick={resetForm} className="bg-gradient-to-r from-red-500 to-red-600 text-white">
-                <Plus className="h-4 w-4 mr-2" /> New
               </Button>
             </div>
           </div>
 
           {/* Editor */}
-          <Card className="glass-border-enhanced p-6 mb-8">
-            <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+          <Card className="glass-border-enhanced p-5 sm:p-6 mb-8">
+            <form onSubmit={handleSubmit} className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div className="md:col-span-1">
                 <Label htmlFor="title">Position Name</Label>
                 <Input id="title" value={form.title ?? ''} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g., Community Manager" className="bg-gray-900/50 border-gray-700 text-white mt-1" />
@@ -125,12 +122,12 @@ export default function AdminCareersPage() {
                 <Label htmlFor="desc">Description</Label>
                 <Textarea id="desc" value={form.description ?? ''} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} placeholder="Brief role overview..." className="bg-gray-900/50 border-gray-700 text-white mt-1" />
               </div>
-              <div className="md:col-span-2 flex gap-2">
-                <Button type="submit" disabled={saving} className="bg-green-600 hover:bg-green-700 text-white">
+              <div className="md:col-span-2 flex flex-col sm:flex-row gap-3">
+                <Button type="submit" disabled={saving} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white">
                   <Save className="h-4 w-4 mr-2" /> {editing ? 'Update' : 'Create'}
                 </Button>
                 {editing && (
-                  <Button type="button" onClick={resetForm} variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                  <Button type="button" onClick={resetForm} variant="outline" className="w-full sm:w-auto border-gray-700 text-gray-300 hover:bg-gray-800">
                     <X className="h-4 w-4 mr-2" /> Cancel
                   </Button>
                 )}
@@ -155,14 +152,14 @@ export default function AdminCareersPage() {
                       </div>
                       {it.description ? (<p className="text-gray-300 text-sm mt-2 max-w-3xl">{it.description}</p>) : null}
                     </div>
-                    <div className="flex gap-2">
-                      <Button asChild variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <Button asChild variant="outline" className="w-full sm:w-auto border-gray-700 text-gray-300 hover:bg-gray-800">
                         <a href={it.google_form_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4 mr-2" /> Open Form</a>
                       </Button>
-                      <Button onClick={() => handleEdit(it)} variant="outline" className="border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white">
+                      <Button onClick={() => handleEdit(it)} variant="outline" className="w-full sm:w-auto border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white">
                         <Edit className="h-4 w-4 mr-2" /> Edit
                       </Button>
-                      <Button onClick={() => handleDelete(it.id)} variant="outline" className="border-red-500 text-red-400 hover:bg-red-600 hover:text-white">
+                      <Button onClick={() => handleDelete(it.id)} variant="outline" className="w-full sm:w-auto border-red-500 text-red-400 hover:bg-red-600 hover:text-white">
                         <Trash2 className="h-4 w-4 mr-2" /> Delete
                       </Button>
                     </div>

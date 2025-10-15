@@ -4,20 +4,23 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ShinyButton } from "@/components/ui/shiny-button"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import Image from "next/image"
 import { Menu, Briefcase, Tag, HelpCircle, FileText, Info, UserCog, LogOut } from "lucide-react"
 import { getAdminToken, removeAdminToken } from "@/lib/admin-auth"
+import { usePathname } from "next/navigation"
 
 export function SiteHeader() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const pathname = usePathname()
 
   useEffect(() => {
     const token = getAdminToken()
-    setIsAdmin(!!token)
-  }, [])
+    const onAdminRoute = typeof pathname === 'string' && pathname.startsWith('/admin')
+    setIsAdmin(!!token || onAdminRoute)
+  }, [pathname])
 
   useEffect(() => {
     let ticking = false
@@ -138,6 +141,8 @@ export function SiteHeader() {
                 aria-label="Navigation menu"
                 className="liquid-glass border-gray-800 p-0 w-64 flex flex-col"
               >
+                {/* A11y: Provide a DialogTitle (visually hidden) to satisfy Radix Dialog */}
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 {/* Brand Header */}
                 <div className="flex items-center gap-1.5 px-4 py-4 border-b border-gray-800">
                   <Image
