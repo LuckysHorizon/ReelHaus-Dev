@@ -15,17 +15,17 @@ export function Card({ card, index }: { card: CardData; index: number }) {
   return (
     <div
       data-index={index}
-      className="relative select-none overflow-hidden rounded-3xl bg-black/40 shadow-lg transform-gpu will-change-transform backface-hidden w-[36vw] h-[52vw] max-w-[280px] max-h-[380px] sm:w-[300px] sm:h-[420px] md:w-[320px] md:h-[440px]"
+      className="relative select-none overflow-hidden rounded-3xl bg-black/40 shadow-lg ring-1 ring-white/10 transform-gpu will-change-transform backface-hidden w-[68vw] h-[96vw] max-w-[340px] max-h-[520px] sm:w-[300px] sm:h-[420px] md:w-[320px] md:h-[440px]"
     >
       <Image
         src={card.src}
         alt={card.title}
         fill
-        sizes="(max-width:768px) 36vw, 320px"
-        className="object-cover"
+        sizes="(max-width:768px) 68vw, 320px"
+        className="object-cover rounded-3xl"
         priority={false}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/70 rounded-3xl pointer-events-none" />
       <div className="absolute top-4 left-4 text-[11px] tracking-wide uppercase text-white/80">
         {card.category}
       </div>
@@ -72,7 +72,7 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
 
   return (
     <div
-      className="relative mx-auto max-w-6xl will-change-transform transform-gpu [contain:layout_paint]"
+      className="relative mx-auto w-full max-w-[92vw] sm:max-w-[640px] md:max-w-6xl overflow-hidden md:overflow-visible px-2 sm:px-0 will-change-transform transform-gpu"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => {
@@ -96,23 +96,23 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="flex items-center justify-center gap-1 md:gap-4">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 px-2">
         {[items[left], items[current], items[right]].map((node, i) => {
           const isCenter = i === 1
           return (
             <div
               key={i}
               className={[
-                "group transition-[transform,opacity,filter] will-change-transform transform-gpu",
+                "group transition-[transform,opacity,filter] will-change-transform transform-gpu rounded-3xl overflow-visible",
                 "duration-[1400ms] ease-[cubic-bezier(0.25,1,0.5,1)]",
                 isCenter
-                  ? "z-20 scale-[1.08] md:scale-[1.1] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:hover:[transform:perspective(1000px)_rotateY(2deg)]"
-                  : "z-10 opacity-60 scale-95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]",
+                  ? "z-20 scale-[1.02] sm:scale-[1.06] md:scale-[1.1] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:hover:[transform:perspective(1000px)_rotateY(2deg)]"
+                  : "z-10 opacity-60 scale-90 sm:scale-95 shadow-[0_10px_40px_rgba(0,0,0,0.4)]",
                 !isCenter && i === 0
-                  ? "-translate-x-[2.25rem] sm:-translate-x-[2.5rem] md:-translate-x-[1.5rem] -rotate-[8deg]"
+                  ? "-translate-x-[1rem] sm:-translate-x-[2.25rem] md:-translate-x-[1.5rem] -rotate-[6deg]"
                   : "",
                 !isCenter && i === 2
-                  ? "translate-x-[2.25rem] sm:translate-x-[2.5rem] md:translate-x-[1.5rem] rotate-[8deg]"
+                  ? "translate-x-[1rem] sm:translate-x-[2.25rem] md:translate-x-[1.5rem] rotate-[6deg]"
                   : "",
                 isCenter ? "hover:shadow-[0_24px_72px_rgba(0,0,0,0.55)]" : "",
               ].join(" ")}

@@ -107,7 +107,7 @@ export function EventHighlights({ highlights = DEFAULT_HIGHLIGHTS }: { highlight
   }, [isPaused, total])
 
   return (
-    <section ref={containerRef} className="relative isolate overflow-hidden py-16 sm:py-20">
+    <section ref={containerRef} className="relative isolate py-16 sm:py-20 overflow-visible">
       {/* Heading */}
       <div className={`container mx-auto px-4 text-center transition-opacity duration-700 ${visible ? "opacity-100" : "opacity-0 translate-y-2"}`}>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
@@ -116,7 +116,7 @@ export function EventHighlights({ highlights = DEFAULT_HIGHLIGHTS }: { highlight
       </div>
 
       {/* Apple-like Cards Carousel */}
-      <div className="container mx-auto px-4 mt-8">
+      <div className="w-full px-0 md:px-4 mt-8 overflow-hidden md:overflow-visible">
         <Carousel
           items={highlights.map((h, i) => (
             <Card
