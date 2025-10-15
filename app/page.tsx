@@ -1,9 +1,8 @@
 import { SiteHeader } from "@/components/site-header"
+import NextDynamic from "next/dynamic"
 import { Hero } from "@/components/hero"
 import { Features } from "@/components/features"
 // import { LogoMarquee } from "@/components/logo-marquee"
-import { EventHighlights } from "@/components/event-highlights"
-import { Pricing } from "@/components/pricing"
 import { AppverseFooter } from "@/components/appverse-footer"
 import Script from "next/script"
 
@@ -68,8 +67,8 @@ export default function Page() {
         <Hero />
         <Features />
         {/* Replaced fast-scrolling marquee with event highlights carousel */}
-        <EventHighlights />
-        <Pricing />
+        <DynamicEventHighlights />
+        <DynamicPricing />
         <AppverseFooter />
       </main>
 
@@ -94,3 +93,14 @@ export default function Page() {
     </>
   )
 }
+
+// Defer heavy, animation-rich sections to lower hydration/CPU on initial load
+const DynamicEventHighlights = NextDynamic(() => import("@/components/event-highlights").then(m => m.EventHighlights), {
+  ssr: false,
+  loading: () => null,
+})
+
+const DynamicPricing = NextDynamic(() => import("@/components/pricing").then(m => m.Pricing), {
+  ssr: false,
+  loading: () => null,
+})

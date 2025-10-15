@@ -51,6 +51,20 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
     return () => clearInterval(id)
   }, [paused, total])
 
+  // Pause auto-advance when tab is hidden to avoid background CPU/GPU work
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setPaused(true)
+      } else {
+        // Small delay to avoid immediate jump on resume
+        setTimeout(() => setPaused(false), 250)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility, { passive: true })
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
   const startX = useRef<number | null>(null)
 
   const goPrev = () => setCurrent((c) => wrap(c - 1))
@@ -58,7 +72,7 @@ export function Carousel({ items }: { items: React.ReactNode[] }) {
 
   return (
     <div
-      className="relative mx-auto max-w-6xl"
+      className="relative mx-auto max-w-6xl will-change-transform transform-gpu [contain:layout_paint]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => {
