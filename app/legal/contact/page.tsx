@@ -18,7 +18,7 @@ export default function ContactPage() {
 
           <div className="space-y-6 text-neutral-200">
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-2">ReelHaus — Club Events Portal</h2>
+              <h2 className="text-2xl font-semibold text-white mb-2">ReelHaus — College Club Events Portal</h2>
               <p>Hyderabad, India</p>
             </div>
             <div className="space-y-1">

@@ -16,23 +16,59 @@ export default function RefundsPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white">Cancellation & Refund Policy</h1>
           <p className="text-sm text-neutral-400 mb-10">Last Updated: October 2025</p>
 
-          <div className="space-y-6 text-neutral-200">
-            <h2 className="text-2xl font-semibold text-white">1. Event Cancellations</h2>
+          <div className="space-y-8 text-neutral-200">
             <p>
-              If an event is cancelled by ReelHaus or the organizing club, registered users will receive a full refund within 7–10 working days through Razorpay to the original payment method.
+              This Cancellation & Refund Policy outlines how ReelHaus, the official college platform for student-run events,
+              workshops, and conferences, manages cancellations and refunds. By registering for an event on our Platform,
+              you agree to the following terms.
             </p>
 
-            <h2 className="text-2xl font-semibold text-white">2. User-Initiated Cancellations</h2>
-            <p>
-              Cancellations by users are not refundable once payment is processed, except in special cases (technical failure, double payment).
-              Requests must be made within 24 hours of payment at <span className="text-red-400">refunds@reelhaus.club</span>.
-            </p>
+            <section className="space-y-3">
+              <h2 className="text-2xl font-semibold text-white">1. Event Cancellations</h2>
+              <ul className="list-disc list-inside space-y-2 text-neutral-300">
+                <li>If an event, workshop, or conference is cancelled by ReelHaus or the respective organizing club, all registered participants will receive a full refund of the registration fee.</li>
+                <li>Refunds will be processed within 7–10 working days through Razorpay, directly to the original payment method used.</li>
+                <li>No administrative or processing fee will be deducted for organizer-initiated cancellations.</li>
+              </ul>
+            </section>
 
-            <h2 className="text-2xl font-semibold text-white">3. Refund Process</h2>
-            <p>Refunds are processed only via the same Razorpay payment reference used during registration. You will be notified via email when the refund is initiated.</p>
+            <section className="space-y-3">
+              <h2 className="text-2xl font-semibold text-white">2. User-Initiated Cancellations</h2>
+              <p>Once a payment is successfully processed, user-initiated cancellations are non-refundable.</p>
+              <p>Refunds may be considered only in exceptional circumstances, such as:</p>
+              <ul className="list-disc list-inside space-y-2 text-neutral-300">
+                <li>Duplicate or accidental payment.</li>
+                <li>Technical error during the transaction that prevented registration.</li>
+              </ul>
+              <p>
+                To request such exceptions, users must contact <span className="text-red-400">refunds@reelhaus.club</span> within 24 hours of the transaction,
+                providing proof of payment and a short explanation.
+              </p>
+            </section>
 
-            <h2 className="text-2xl font-semibold text-white">4. Event Rescheduling</h2>
-            <p>If an event is rescheduled, your existing registration remains valid. You can request a refund only if the new date is unsuitable.</p>
+            <section className="space-y-3">
+              <h2 className="text-2xl font-semibold text-white">3. Refund Process</h2>
+              <ul className="list-disc list-inside space-y-2 text-neutral-300">
+                <li>All approved refunds will be processed only through Razorpay, using the same payment reference ID used during registration.</li>
+                <li>Refunds cannot be redirected to any other account or payment method.</li>
+                <li>Users will receive an email confirmation once the refund is initiated, followed by a Razorpay notification when the transaction is completed.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-2xl font-semibold text-white">4. Event Rescheduling</h2>
+              <ul className="list-disc list-inside space-y-2 text-neutral-300">
+                <li>If an event, workshop, or conference is rescheduled, all existing registrations will remain valid for the new date.</li>
+                <li>If you are unable to attend on the revised schedule, you may request a refund via <span className="text-red-400">refunds@reelhaus.club</span> within 48 hours of the reschedule announcement.</li>
+                <li>Standard refund timelines (7–10 working days) will apply once the request is approved.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-2xl font-semibold text-white">5. Contact Us</h2>
+              <p>For any refund or cancellation-related inquiries, please reach out to our support team:</p>
+              <p className="text-white">📧 reelhaus.in@gmail.com</p>
+            </section>
           </div>
         </div>
       </section>
