@@ -22,13 +22,13 @@ export default function ContactPage() {
               <p>Hyderabad, India</p>
             </div>
             <div className="space-y-1">
-              <p><span className="text-neutral-400">Email:</span> <span className="text-white">support@reelhaus.club</span></p>
-              <p><span className="text-neutral-400">Website:</span> <span className="text-white">www.reelhaus.club</span></p>
+              <p><span className="text-neutral-400">Email:</span> <span className="text-white">reelhaus.in@gmail.com</span></p>
+              <p><span className="text-neutral-400">Website:</span> <span className="text-white">www.reelhaus.in</span></p>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold text-white mb-1">Business Hours</h3>
-              <p>Monday to Saturday — 9:00 AM to 6:00 PM (IST)</p>
+              <p>Monday to Saturday — 9:00 AM to 4:00 PM (IST)</p>
             </div>
           </div>
         </div>
