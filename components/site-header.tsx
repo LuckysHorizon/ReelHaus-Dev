@@ -18,8 +18,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const token = getAdminToken()
-    const onAdminRoute = typeof pathname === 'string' && pathname.startsWith('/admin')
-    setIsAdmin(!!token || onAdminRoute)
+    setIsAdmin(!!token)
   }, [pathname])
 
   useEffect(() => {

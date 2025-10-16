@@ -47,6 +47,11 @@ export default function AdminCareersPage() {
   }
 
   useEffect(() => {
+    const token = getAdminToken()
+    if (!token) {
+      window.location.href = '/admin/login'
+      return
+    }
     fetchItems()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
