@@ -40,6 +40,8 @@ export function Hero() {
           zIndex: -1
         }}
       >
+        {/* High refresh-rate detection gate: only enable scrolling ribbons on 90Hz+ devices */}
+        {/* Always animate on mobile; gating removed per request */}
         <HeroThreadsStatic />
       </div>
     </section>

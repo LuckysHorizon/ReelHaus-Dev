@@ -13,6 +13,8 @@
   will-change: transform;
 }
 
+/* marker class removed; we switch to data attribute on #threads-bg */
+
 /* Shared ribbon styles */
 .ribbon {
   position: absolute;
@@ -140,12 +142,12 @@
   .ribbon:nth-child(2) { top: 26%; left: -52%; transform: rotate(10deg); }
   .ribbon:nth-child(3) { top: 48%; left: -50%; transform: rotate(-22deg); }
   .ribbon:nth-child(4) { top: 70%; left: -48%; transform: rotate(8deg); }
-  /* Slow down marquee on mobile for smoothness */
+  /* Animate on all mobiles (slow for smoothness) */
+  :global(#threads-bg) .inner { animation-name: ribbon-marquee; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; transform: translateZ(0); }
   .ribbon:nth-child(1) .inner { animation-duration: 72s !important; }
   .ribbon:nth-child(2) .inner { animation-duration: 60s !important; }
   .ribbon:nth-child(3) .inner { animation-duration: 66s !important; }
   .ribbon:nth-child(4) .inner { animation-duration: 70s !important; }
-  .inner { will-change: transform; transform: translateZ(0); }
 }
 
 

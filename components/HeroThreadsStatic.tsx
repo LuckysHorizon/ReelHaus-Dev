@@ -13,7 +13,7 @@ const HeroThreadsStatic = () => {
   )
 
   return (
-    <div className={styles.heroBackground} aria-hidden>
+    <div id="threads-bg" className={`${styles.heroBackground}`} aria-hidden>
       <div className={`${styles.ribbon} ${styles.ribbonWhite}`}>
         <div className={styles.inner}>{renderRow()}{renderRow()}</div>
       </div>
