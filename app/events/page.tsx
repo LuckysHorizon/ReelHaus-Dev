@@ -132,7 +132,7 @@ export default function EventsPage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     priority={false}
                   />
-                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-yellow-300">
+                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-white">
                     {event.seats_available} seats left
                   </div>
                   <div className="absolute top-4 left-4">
@@ -178,18 +178,18 @@ export default function EventsPage() {
                   <div className="flex gap-2">
                     <ShinyButton 
                       asChild
-                      className="flex-1"
+                      className="flex-1 inline-flex items-center justify-center text-center"
                     >
-                      <Link href={`/events/${event.id}/register`}>
+                      <Link href={`/events/${event.id}/register`} className="w-full inline-flex items-center justify-center">
                         Register Now
                       </Link>
                     </ShinyButton>
                     <ShinyButton 
                       asChild
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 inline-flex items-center justify-center text-center"
                     >
-                      <Link href={`/events/${event.id}`}>
+                      <Link href={`/events/${event.id}`} className="w-full inline-flex items-center justify-center">
                         Details
                       </Link>
                     </ShinyButton>

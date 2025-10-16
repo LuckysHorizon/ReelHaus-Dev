@@ -85,7 +85,7 @@ export function Pricing() {
         <div className="mx-auto max-w-3xl text-center">
           <div
             className="mx-auto mb-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-            style={{ backgroundColor: "rgba(255,215,0,0.12)", color: ACCENT }}
+            style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "#FFFFFF" }}
           >
             Upcoming Events
           </div>
@@ -118,7 +118,7 @@ export function Pricing() {
                   className="object-cover"
                   priority={false}
                 />
-                <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-yellow-300">
+                <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-sm text-white">
                   {event.seats_available || 0} seats left
                 </div>
               </div>
@@ -152,15 +152,19 @@ export function Pricing() {
                   <ShinyButton
                     asChild
                     variant="outline"
-                    className="flex-1 rounded-full px-4 py-2 text-sm"
+                    className="flex-1 rounded-full px-4 py-2 text-sm inline-flex items-center justify-center text-center"
                   >
-                    <Link href={`/events/${event.id}`}>View Details</Link>
+                    <Link href={`/events/${event.id}`} className="w-full inline-flex items-center justify-center">
+                      View Details
+                    </Link>
                   </ShinyButton>
                   <ShinyButton
                     asChild
-                    className="flex-1 rounded-full px-4 py-2 text-sm"
+                    className="flex-1 rounded-full px-4 py-2 text-sm inline-flex items-center justify-center text-center"
                   >
-                    <Link href={`/events/${event.id}/register`}>Register</Link>
+                    <Link href={`/events/${event.id}/register`} className="w-full inline-flex items-center justify-center">
+                      Register
+                    </Link>
                   </ShinyButton>
                 </div>
               </CardHeader>
