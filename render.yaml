@@ -4,10 +4,9 @@ services:
     env: node
     plan: starter
     region: oregon
-    runtime: node
     nodeVersion: 20
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm run build
+    startCommand: pnpm start
     autoDeploy: true
     healthCheckPath: /
     envVars:
@@ -27,4 +26,3 @@ services:
       - name: ephemeral
         mountPath: /tmp
         sizeGB: 1
-
