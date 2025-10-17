@@ -86,8 +86,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create registration' }, { status: 500 })
     }
     
-    // Calculate total amount
-    const amount = event.price_cents * validatedData.tickets
+    // Calculate total amount (store cents in DB, send rupees to Cashfree)
+    const amount = event.price_cents * validatedData.tickets // cents
+    const amountRupees = Number((amount / 100).toFixed(2))
     
     // Generate unique order ID for Cashfree
     const orderId = `ORDER_${registration.id}_${Date.now()}`
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
     // Create Cashfree order
     const cashfreeOrder = await cashfree.createOrder({
       orderId: orderId,
-      orderAmount: amount,
+      orderAmount: amountRupees,
       orderCurrency: event.currency,
       orderNote: `Event Registration: ${event.title}`,
       customerDetails: {

@@ -119,6 +119,9 @@ importers:
       bullmq:
         specifier: ^5.0.0
         version: 5.61.0
+      cashfree-sdk:
+        specifier: ^0.1.1
+        version: 0.1.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1743,6 +1746,9 @@ packages:
 
   caniuse-lite@1.0.30001749:
     resolution: {integrity: sha512-0rw2fJOmLfnzCRbkm8EyHL8SvI2Apu5UbnQuTsJ0ClgrH8hcwFooJ1s5R0EP8o8aVrFu8++ae29Kt9/gZAZp/Q==}
+
+  cashfree-sdk@0.1.1:
+    resolution: {integrity: sha512-Mr7oJObcDJR7tHeDvCyMeD2nsJhtik8P0I1hxZ+VbqtL+DtImirHKm/SsX8SikJuR4c+letYXgQfTeEbpEnoLw==}
 
   cfb@1.2.2:
     resolution: {integrity: sha512-KfdUZsSOw19/ObEWasvBP/Ac4reZvAGauZhs6S/gqNhXhI7cKwvlH7ulj+dOEYnca4bm4SGo8C1bTAQvnTjgQA==}
@@ -4486,6 +4492,8 @@ snapshots:
   camelcase@5.3.1: {}
 
   caniuse-lite@1.0.30001749: {}
+
+  cashfree-sdk@0.1.1: {}
 
   cfb@1.2.2:
     dependencies:

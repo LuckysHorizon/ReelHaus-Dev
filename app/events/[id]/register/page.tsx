@@ -99,6 +99,17 @@ export default function EventRegistrationPage() {
     }
   }, [params.id])
 
+  // Preload Cashfree SDK on any /events/*/register route so checkout opens reliably
+  useEffect(() => {
+    const existing = document.querySelector('script[src="https://sdk.cashfree.com/js/v3/cashfree.js"]')
+    if (!existing) {
+      const script = document.createElement('script')
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'
+      script.async = true
+      document.body.appendChild(script)
+    }
+  }, [])
+
   const handleTicketChange = (tickets: number) => {
     // Ensure tickets is between 1 and 6
     const validTickets = Math.min(Math.max(tickets, 1), 6)

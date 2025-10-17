@@ -49,28 +49,49 @@ class CashfreeSDK {
   private baseURL: string
 
   constructor() {
-    this.appId = process.env.CASHFREE_APP_ID!
-    this.secretKey = process.env.CASHFREE_SECRET_KEY!
-    this.environment = (process.env.CASHFREE_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox'
+    this.appId = process.env.CASHFREE_APP_ID || ''
+    this.secretKey = process.env.CASHFREE_SECRET_KEY || ''
+    const rawEnv = (process.env.CASHFREE_ENVIRONMENT || '').toLowerCase().trim()
+    // Accept common aliases
+    const normalizedEnv = rawEnv === 'production' || rawEnv === 'prod' ? 'production' : 'sandbox'
+    this.environment = normalizedEnv
     
     // Set base URL based on environment
+    // Cashfree PG endpoints live under /pg
     this.baseURL = this.environment === 'production' 
-      ? 'https://api.cashfree.com' 
-      : 'https://sandbox.cashfree.com'
+      ? 'https://api.cashfree.com/pg' 
+      : 'https://sandbox.cashfree.com/pg'
+
+    // Basic validation to surface clear errors during build/runtime
+    if (!this.appId || !this.secretKey) {
+      console.error('[Cashfree] Missing credentials. Ensure CASHFREE_APP_ID and CASHFREE_SECRET_KEY are set.')
+    }
   }
 
   /**
    * Create a payment order in Cashfree
    */
   async createOrder(params: CreateOrderParams): Promise<CreateOrderResponse> {
-    const url = `${this.baseURL}/pg/orders`
-    
+    const url = `${this.baseURL}/orders`
+
+    // Map to Cashfree's expected snake_case keys and validate required values
+    const normalizedAmount = Number(Number(params.orderAmount).toFixed(2))
+    const customerId = (params.customerDetails?.customerId || '').toString().trim()
+    if (!customerId) {
+      throw new Error('Cashfree createOrder: customer_details.customer_id is required')
+    }
+
     const payload = {
       order_id: params.orderId,
-      order_amount: params.orderAmount,
-      order_currency: params.orderCurrency,
+      order_amount: normalizedAmount,
+      order_currency: params.orderCurrency || 'INR',
       order_note: params.orderNote,
-      customer_details: params.customerDetails,
+      customer_details: {
+        customer_id: customerId,
+        customer_name: params.customerDetails.customerName,
+        customer_email: params.customerDetails.customerEmail,
+        customer_phone: params.customerDetails.customerPhone,
+      },
       order_meta: {
         return_url: params.orderMeta?.returnUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/events/payment/success`,
         notify_url: params.orderMeta?.notifyUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
@@ -91,8 +112,12 @@ class CashfreeSDK {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(`Cashfree API Error: ${errorData.message || response.statusText}`)
+        let errorText = await response.text()
+        try {
+          const errorData = JSON.parse(errorText)
+          errorText = errorData.message || errorText
+        } catch {}
+        throw new Error(`Cashfree API Error (${response.status}): ${errorText}`)
       }
 
       const data = await response.json()
@@ -132,7 +157,7 @@ class CashfreeSDK {
    * Get order details
    */
   async getOrderDetails(orderId: string) {
-    const url = `${this.baseURL}/pg/orders/${orderId}`
+    const url = `${this.baseURL}/orders/${orderId}`
     
     try {
       const response = await fetch(url, {
@@ -159,7 +184,7 @@ class CashfreeSDK {
    * Get payment details
    */
   async getPaymentDetails(orderId: string) {
-    const url = `${this.baseURL}/pg/orders/${orderId}/payments`
+    const url = `${this.baseURL}/orders/${orderId}/payments`
     
     try {
       const response = await fetch(url, {

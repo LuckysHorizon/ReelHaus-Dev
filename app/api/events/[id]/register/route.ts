@@ -60,12 +60,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Create Cashfree order
-    const amount = event.price_cents * validatedData.tickets
+    const amount = event.price_cents * validatedData.tickets // cents
+    const amountRupees = Number((amount / 100).toFixed(2))
     const orderId = `ORDER_${registration.id}_${Date.now()}`
     
     const cashfreeOrder = await cashfree.createOrder({
       orderId: orderId,
-      orderAmount: amount,
+      orderAmount: amountRupees,
       orderCurrency: event.currency,
       orderNote: `Event Registration: ${event.title}`,
       customerDetails: {
