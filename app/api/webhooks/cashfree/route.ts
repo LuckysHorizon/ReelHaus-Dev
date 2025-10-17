@@ -34,20 +34,36 @@ export async function POST(request: NextRequest) {
     }
     
     const event = JSON.parse(body)
-    const eventType = event.type
+    const rawType: string | undefined = event.type || event.event || event?.data?.event
+    const eventType = (rawType || '').toString().trim().toLowerCase()
     const orderId = event.data?.order?.order_id || event.data?.order_id
     
     console.log(`Cashfree webhook received: ${eventType} for order ${orderId}`)
     
     // Handle different event types
     switch (eventType) {
-      case 'PAYMENT_SUCCESS_WEBHOOK':
-      case 'ORDER_PAID':
+      case 'payment_success_webhook':
+      case 'order_paid':
+      case 'success payment':
+      case 'success_payment':
+      case 'success payment tdr':
         return await handlePaymentSuccess(event)
-      case 'PAYMENT_FAILED_WEBHOOK':
+      case 'payment_failed_webhook':
+      case 'failed payment':
+      case 'failed_payment':
+      case 'abandoned checkout':
         return await handlePaymentFailed(event)
-      case 'PAYMENT_USER_DROPPED':
+      case 'payment_user_dropped':
+      case 'user dropped payment':
+      case 'abandoned_checkout':
         return await handleUserDropped(event)
+      case 'dispute created':
+      case 'dispute updated':
+      case 'dispute closed':
+        return NextResponse.json({ status: 'success' })
+      case 'refund':
+      case 'auto refund':
+        return NextResponse.json({ status: 'success' })
       default:
         console.log(`Unhandled Cashfree event type: ${eventType}`)
         return NextResponse.json({ status: 'ignored', message: `Event type ${eventType} not handled` })
