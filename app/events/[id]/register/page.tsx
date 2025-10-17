@@ -182,7 +182,7 @@ export default function EventRegistrationPage() {
     setError(null)
 
     try {
-      // Step 1: Create Razorpay order
+      // Step 1: Create Cashfree order
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: {
@@ -205,36 +205,35 @@ export default function EventRegistrationPage() {
       if (response.ok) {
         const data = await response.json()
         
-        // Load Razorpay script
+        // Load Cashfree SDK and open checkout
         const script = document.createElement('script')
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+        script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'
         script.onload = () => {
-          const options = {
-            key: data.razorpay_key_id,
-            amount: data.order.amount,
-            currency: data.order.currency,
-            name: 'ReelHaus',
-            description: `Registration for ${data.event.title}`,
-            order_id: data.order.id,
-            handler: async function (response: any) {
+          const cashfree = new (window as any).Cashfree({
+            mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'sandbox'
+          })
+
+          const checkoutOptions = {
+            paymentSessionId: data.cashfree_payment_session_id,
+            redirectTarget: '_self'
+          }
+
+          cashfree.checkout(checkoutOptions)
+            .then(async (resp: any) => {
               try {
                 // Step 2: Verify payment on backend
                 const verifyResponse = await fetch('/api/payments/verify', {
                   method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
+                  headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
+                    cashfree_order_id: data.cashfree_order_id,
+                    cashfree_payment_id: resp?.cf_payment_id,
                     registration_id: data.registration_id
                   })
                 })
-
                 const verifyJson = await verifyResponse.json().catch(() => ({}))
                 if (verifyResponse.ok && verifyJson?.success) {
-                  router.push(`/events/payment/success?status=success&payment_id=${response.razorpay_payment_id}&registration_id=${data.registration_id}`)
+                  router.push(`/events/payment/success?status=success&payment_id=${resp?.cf_payment_id}&registration_id=${data.registration_id}`)
                 } else {
                   const reason = encodeURIComponent(verifyJson?.error || 'verification_failed')
                   router.push(`/events/payment/failure?status=failure&reason=${reason}`)
@@ -244,25 +243,14 @@ export default function EventRegistrationPage() {
                 const reason = encodeURIComponent('network_error')
                 router.push(`/events/payment/failure?status=failure&reason=${reason}`)
               }
-            },
-            prefill: {
-              name: formData.name,
-              email: formData.email,
-              contact: formData.phone
-            },
-            theme: {
-              color: '#DC2626'
-            },
-            modal: {
-              ondismiss: function() {
-                setSubmitting(false)
-              }
-            }
-          }
-          
-          // @ts-ignore
-          const rzp = new window.Razorpay(options)
-          rzp.open()
+            })
+            .catch((error: any) => {
+              console.error('Cashfree checkout error:', error)
+              setError('Failed to open payment gateway')
+            })
+            .finally(() => {
+              setSubmitting(false)
+            })
         }
         script.onerror = () => {
           setError('Failed to load payment gateway')
