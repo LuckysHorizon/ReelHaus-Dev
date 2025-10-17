@@ -27,12 +27,17 @@ function PaymentSuccessInner() {
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
       try {
+        console.log(`Fetching registration data for ID: ${registrationId}`)
         const response = await fetch(`/api/registrations/${registrationId}`)
+        console.log('Registration API response:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log('Registration data received:', data)
           setRegistrationData(data)
         } else {
-          console.error('Failed to fetch registration data')
+          const errorData = await response.json()
+          console.error('Failed to fetch registration data:', errorData)
         }
       } catch (error) {
         console.error('Error fetching registration data:', error)
@@ -104,7 +109,7 @@ function PaymentSuccessInner() {
             <p className="text-xl text-gray-300 mb-2">Thank you for registering.</p>
             <p className="text-lg text-green-400 font-semibold mb-2">Please check your email for details.</p>
             <p className="text-gray-400">
-              Payment ID: {paymentId}
+              Payment ID: {paymentId || 'N/A'}
             </p>
           </div>
 
@@ -115,27 +120,37 @@ function PaymentSuccessInner() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">
-                    {registrationData?.event.title}
+                    {registrationData?.event?.title || 'Event Registration'}
                   </h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 text-gray-300">
                       <Calendar className="h-4 w-4 text-red-400" />
-                      <span>{new Date(registrationData?.event.start_datetime).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric',
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}</span>
+                      <span>
+                        {registrationData?.event?.start_datetime 
+                          ? new Date(registrationData.event.start_datetime).toLocaleDateString('en-US', { 
+                              weekday: 'long', 
+                              year: 'numeric',
+                              month: 'long', 
+                              day: 'numeric' 
+                            })
+                          : 'Date TBD'
+                        }
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-300">
                       <Clock className="h-4 w-4 text-red-400" />
-                      <span>{new Date(registrationData?.event.start_datetime).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })} - {new Date(registrationData?.event.end_datetime).toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}</span>
+                      <span>
+                        {registrationData?.event?.start_datetime && registrationData?.event?.end_datetime
+                          ? `${new Date(registrationData.event.start_datetime).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })} - ${new Date(registrationData.event.end_datetime).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}`
+                          : 'Time TBD'
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -143,15 +158,20 @@ function PaymentSuccessInner() {
                 <div className="border-t border-gray-700 pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-300">Attendee</span>
-                    <span className="text-white">{registrationData?.name}</span>
+                    <span className="text-white">{registrationData?.name || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-300">Tickets</span>
-                    <span className="text-white">{registrationData?.tickets}</span>
+                    <span className="text-white">{registrationData?.tickets || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Amount Paid</span>
-                    <span className="text-red-400 font-semibold">₹{((registrationData?.event.price_cents || 0) * (registrationData?.tickets || 1) / 100).toLocaleString('en-IN')}</span>
+                    <span className="text-red-400 font-semibold">
+                      ₹{registrationData?.event?.price_cents && registrationData?.tickets 
+                        ? ((registrationData.event.price_cents * registrationData.tickets) / 100).toLocaleString('en-IN')
+                        : 'N/A'
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -176,7 +196,7 @@ function PaymentSuccessInner() {
                 </div>
                 <h3 className="font-semibold text-white mb-2">Email Confirmation</h3>
                 <p className="text-sm text-gray-400 max-w-xs mx-auto">
-                  A confirmation email with your ticket details has been sent to {registrationData?.email}
+                  A confirmation email with your ticket details has been sent to {registrationData?.email || 'your registered email'}
                 </p>
               </div>
               <div className="text-center px-2">
