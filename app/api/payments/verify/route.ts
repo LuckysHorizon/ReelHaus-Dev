@@ -18,24 +18,44 @@ export async function POST(request: NextRequest) {
     const { cashfree_order_id, cashfree_payment_id, registration_id } = validatedData
     
     // Verify payment with Cashfree
-    const paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
+    console.log(`[Payment Verify] Verifying payment for order: ${cashfree_order_id}`)
+    console.log(`[Payment Verify] Payment ID: ${cashfree_payment_id}`)
+    console.log(`[Payment Verify] Registration ID: ${registration_id}`)
     
-    if (!paymentDetails || paymentDetails.length === 0) {
+    let paymentDetails
+    try {
+      paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
+      console.log(`[Payment Verify] Cashfree payment details:`, paymentDetails)
+    } catch (cfError) {
+      console.error(`[Payment Verify] Cashfree API error:`, cfError)
       return NextResponse.json({ 
         success: false, 
-        error: 'Payment not found' 
+        error: 'Failed to verify payment with Cashfree',
+        details: String(cfError)
+      }, { status: 500 })
+    }
+    
+    if (!paymentDetails || paymentDetails.length === 0) {
+      console.error(`[Payment Verify] No payment details found for order: ${cashfree_order_id}`)
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment not found in Cashfree' 
       }, { status: 404 })
     }
     
     const cashfreePayment = paymentDetails[0]
+    console.log(`[Payment Verify] Payment status: ${cashfreePayment.payment_status}`)
     
     // Check if payment was successful
     if (cashfreePayment.payment_status !== 'SUCCESS') {
+      console.error(`[Payment Verify] Payment not successful. Status: ${cashfreePayment.payment_status}`)
       return NextResponse.json({ 
         success: false, 
-        error: 'Payment not successful' 
+        error: `Payment not successful. Status: ${cashfreePayment.payment_status}` 
       }, { status: 400 })
     }
+    
+    console.log(`[Payment Verify] Payment verified successfully: ${cashfree_payment_id}`)
     
     // Get registration details with event information
     const { data: registration, error: regError } = await supabaseAdmin
@@ -76,6 +96,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Update payment record with payment ID
+    console.log(`[Payment Verify] Updating payment record: ${paymentRecord.id}`)
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')
       .update({
@@ -92,7 +113,10 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
     
+    console.log(`[Payment Verify] Payment record updated successfully`)
+    
     // Update registration status
+    console.log(`[Payment Verify] Updating registration status to 'paid': ${registration_id}`)
     const { error: updateRegError } = await supabaseAdmin
       .from('registrations')
       .update({ status: 'paid' })
@@ -106,6 +130,8 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
     
+    console.log(`[Payment Verify] Registration status updated successfully`)
+    
     // Atomically decrement event seats
     const { error: decrementError } = await supabaseAdmin
       .rpc('decrement_event_seats', {
@@ -118,7 +144,9 @@ export async function POST(request: NextRequest) {
       // Note: In production, you might want to implement a compensation mechanism
     }
     // Send confirmation emails to all attendees (non-blocking but with proper error handling)
+    console.log(`[Payment Verify] Checking email configuration...`)
     if (process.env.RESEND_API_KEY) {
+      console.log(`[Payment Verify] Sending confirmation emails...`)
       const event = registration.events
       const eventDate = new Date(event.start_datetime).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -149,6 +177,8 @@ export async function POST(request: NextRequest) {
         eventTime,
         eventLocation: 'TBD', // Add venue field to events table if needed
         paymentId: cashfree_payment_id,
+      }).then(() => {
+        console.log(`[Payment Verify] Confirmation emails sent successfully`)
       }).catch((emailError) => {
         console.error('Email sending failed for payment verification:', emailError)
         // Don't fail the payment verification if email fails

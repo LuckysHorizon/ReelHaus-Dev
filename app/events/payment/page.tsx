@@ -42,7 +42,7 @@ function PaymentPageInner() {
     // Fetch payment data from API
     const fetchPaymentData = async () => {
       try {
-        const response = await fetch(`/api/payment-data?registrationId=${registrationId}`)
+        const response = await fetch(`/api/payments/${registrationId}`)
         if (response.ok) {
           const data = await response.json()
           setPaymentData(data)

@@ -13,9 +13,11 @@ function PaymentSuccessInner() {
   const paymentId = searchParams.get('payment_id')
   const registrationId = searchParams.get('registration_id')
   const status = searchParams.get('status')
+  const pendingVerification = searchParams.get('pending_verification')
   
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [retryCount, setRetryCount] = useState(0)
   
 
   useEffect(() => {
@@ -29,20 +31,40 @@ function PaymentSuccessInner() {
       try {
         console.log(`Fetching registration data for ID: ${registrationId}`)
         const response = await fetch(`/api/registrations/${registrationId}`)
-        console.log('Registration API response:', response.status)
-        
         if (response.ok) {
           const data = await response.json()
           console.log('Registration data received:', data)
           setRegistrationData(data)
         } else {
-          const errorData = await response.json()
+          const errorData = await response.json().catch(() => ({}))
           console.error('Failed to fetch registration data:', errorData)
+          
+          // If verification is pending, retry a few times
+          if (pendingVerification && retryCount < 5) {
+            console.log(`Retrying fetch (attempt ${retryCount + 1}/5)...`)
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1)
+              fetchRegistrationData()
+            }, 2000) // Wait 2 seconds before retry
+            return
+          }
         }
       } catch (error) {
         console.error('Error fetching registration data:', error)
+        
+        // If verification is pending, retry a few times
+        if (pendingVerification && retryCount < 5) {
+          console.log(`Retrying fetch after error (attempt ${retryCount + 1}/5)...`)
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1)
+            fetchRegistrationData()
+          }, 2000)
+          return
+        }
       } finally {
-        setLoading(false)
+        if (!pendingVerification || retryCount >= 5) {
+          setLoading(false)
+        }
       }
     }
 
@@ -61,7 +83,7 @@ function PaymentSuccessInner() {
               <CheckCircle2 className="h-10 w-10 text-white rotate-45 opacity-70" />
             </div>
             <h1 className="text-4xl font-bold mb-2 text-red-400">Payment Failed</h1>
-            <p className="text-gray-300 mb-6">Your payment could not be verified. If money was deducted, it will be auto-refunded by Razorpay.</p>
+            <p className="text-gray-300 mb-6">Your payment could not be verified. If money was deducted, it will be auto-refunded by Cashfree.</p>
             <div className="space-x-4">
               <ShinyButton asChild>
                 <a href="/events">Back to Events</a>
@@ -107,9 +129,15 @@ function PaymentSuccessInner() {
               Payment Successful
             </h1>
             <p className="text-xl text-gray-300 mb-2">Thank you for registering.</p>
-            <p className="text-lg text-green-400 font-semibold mb-2">Please check your email for details.</p>
+            {pendingVerification ? (
+              <p className="text-lg text-yellow-400 font-semibold mb-2">
+                Payment verification is in progress. Please wait...
+              </p>
+            ) : (
+              <p className="text-lg text-green-400 font-semibold mb-2">Please check your email for details.</p>
+            )}
             <p className="text-gray-400">
-              Payment ID: {paymentId || 'N/A'}
+              Payment ID: {paymentId}
             </p>
           </div>
 
@@ -120,56 +148,59 @@ function PaymentSuccessInner() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">
-                    {registrationData?.event?.title || 'Event Registration'}
+                    {registrationData?.event?.title || 'Event Details Loading...'}
                   </h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3 text-gray-300">
-                      <Calendar className="h-4 w-4 text-red-400" />
-                      <span>
-                        {registrationData?.event?.start_datetime 
-                          ? new Date(registrationData.event.start_datetime).toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric',
-                              month: 'long', 
-                              day: 'numeric' 
-                            })
-                          : 'Date TBD'
-                        }
-                      </span>
+                  {registrationData?.event ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 text-gray-300">
+                        <Calendar className="h-4 w-4 text-red-400" />
+                        <span>{new Date(registrationData.event.start_datetime).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric',
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-300">
+                        <Clock className="h-4 w-4 text-red-400" />
+                        <span>{new Date(registrationData.event.start_datetime).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })} - {new Date(registrationData.event.end_datetime).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-gray-300">
-                      <Clock className="h-4 w-4 text-red-400" />
-                      <span>
-                        {registrationData?.event?.start_datetime && registrationData?.event?.end_datetime
-                          ? `${new Date(registrationData.event.start_datetime).toLocaleTimeString('en-US', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })} - ${new Date(registrationData.event.end_datetime).toLocaleTimeString('en-US', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}`
-                          : 'Time TBD'
-                        }
-                      </span>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 text-gray-300">
+                        <Calendar className="h-4 w-4 text-red-400" />
+                        <span>Loading event details...</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-gray-300">
+                        <Clock className="h-4 w-4 text-red-400" />
+                        <span>Please wait...</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 <div className="border-t border-gray-700 pt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-300">Attendee</span>
-                    <span className="text-white">{registrationData?.name || 'N/A'}</span>
+                    <span className="text-white">{registrationData?.name || 'Loading...'}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-300">Tickets</span>
-                    <span className="text-white">{registrationData?.tickets || 'N/A'}</span>
+                    <span className="text-white">{registrationData?.tickets || 'Loading...'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Amount Paid</span>
                     <span className="text-red-400 font-semibold">
-                      ₹{registrationData?.event?.price_cents && registrationData?.tickets 
-                        ? ((registrationData.event.price_cents * registrationData.tickets) / 100).toLocaleString('en-IN')
-                        : 'N/A'
+                      {registrationData?.event ? 
+                        `₹${((registrationData.event.price_cents || 0) * (registrationData.tickets || 1) / 100).toLocaleString('en-IN')}` : 
+                        'Loading...'
                       }
                     </span>
                   </div>

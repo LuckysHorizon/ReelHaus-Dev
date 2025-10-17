@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const orderId = event.data?.order?.order_id || event.data?.order_id
     
     console.log(`Cashfree webhook received: ${eventType} for order ${orderId}`)
+    console.log(`Webhook event data:`, JSON.stringify(event, null, 2))
     
     // Handle different event types
     switch (eventType) {

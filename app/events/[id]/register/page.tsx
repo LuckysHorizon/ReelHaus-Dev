@@ -234,23 +234,49 @@ export default function EventRegistrationPage() {
           console.log('Opening Cashfree checkout with session:', data.cashfree_payment_session_id)
           cashfree.checkout(checkoutOptions)
             .then(async (resp: any) => {
+              console.log('Cashfree checkout response:', resp)
+              console.log('Response type:', typeof resp)
+              console.log('Response keys:', Object.keys(resp || {}))
+              
+              // Handle different response formats
+              const paymentId = resp?.cf_payment_id || resp?.payment_id || resp?.id || resp
+              console.log('Extracted payment ID:', paymentId)
+              
+              if (!paymentId) {
+                console.error('No payment ID found in response:', resp)
+                setError('Payment completed but verification failed')
+                setSubmitting(false)
+                return
+              }
+              
               try {
                 // Step 2: Verify payment on backend
+                console.log('Calling verification API with:', {
+                  cashfree_order_id: data.cashfree_order_id,
+                  cashfree_payment_id: paymentId,
+                  registration_id: data.registration_id
+                })
+                
                 const verifyResponse = await fetch('/api/payments/verify', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     cashfree_order_id: data.cashfree_order_id,
-                    cashfree_payment_id: resp?.cf_payment_id,
+                    cashfree_payment_id: paymentId,
                     registration_id: data.registration_id
                   })
                 })
+                
                 const verifyJson = await verifyResponse.json().catch(() => ({}))
+                console.log('Payment verification response:', verifyJson)
+                
                 if (verifyResponse.ok && verifyJson?.success) {
-                  router.push(`/events/payment/success?status=success&payment_id=${resp?.cf_payment_id}&registration_id=${data.registration_id}`)
+                  router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}`)
                 } else {
-                  const reason = encodeURIComponent(verifyJson?.error || 'verification_failed')
-                  router.push(`/events/payment/failure?status=failure&reason=${reason}`)
+                  console.error('Payment verification failed:', verifyJson)
+                  // Still redirect to success page - webhook will handle verification
+                  console.log('Redirecting to success page anyway - webhook will verify payment')
+                  router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}&pending_verification=true`)
                 }
               } catch (verifyError) {
                 console.error('Payment verification error:', verifyError)

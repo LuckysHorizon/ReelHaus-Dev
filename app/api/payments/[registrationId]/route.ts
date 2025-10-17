@@ -28,7 +28,9 @@ export async function GET(
         )
       `)
       .eq('registration_id', registrationId)
-      .eq('status', 'initiated')
+      .in('status', ['initiated', 'succeeded'])
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single()
 
     if (error || !paymentData) {
