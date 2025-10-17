@@ -64,7 +64,9 @@ export async function POST(request: NextRequest) {
     const amountRupees = Number((amount / 100).toFixed(2))
     const orderId = `ORDER_${registration.id}_${Date.now()}`
     
-    const cashfreeOrder = await cashfree.createOrder({
+    let cashfreeOrder
+    try {
+      cashfreeOrder = await cashfree.createOrder({
       orderId: orderId,
       orderAmount: amountRupees,
       orderCurrency: event.currency,
@@ -80,7 +82,11 @@ export async function POST(request: NextRequest) {
         notifyUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
         paymentMethods: 'cc,dc,upi,nb,paylater'
       }
-    })
+      })
+    } catch (cfErr: any) {
+      console.error('Cashfree createOrder failed (event register):', cfErr)
+      return NextResponse.json({ error: 'Payment gateway error', provider: 'cashfree', details: String(cfErr?.message || cfErr) }, { status: 502 })
+    }
     
     // Update registration with payment info
     const { error: updateError } = await supabaseAdmin

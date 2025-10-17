@@ -220,15 +220,18 @@ export default function EventRegistrationPage() {
         const script = document.createElement('script')
         script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'
         script.onload = () => {
+          console.log('Cashfree SDK loaded, initializing...')
           const cashfree = new (window as any).Cashfree({
             mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'sandbox'
           })
+          console.log('Cashfree initialized with mode:', process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'sandbox')
 
           const checkoutOptions = {
             paymentSessionId: data.cashfree_payment_session_id,
             redirectTarget: '_self'
           }
 
+          console.log('Opening Cashfree checkout with session:', data.cashfree_payment_session_id)
           cashfree.checkout(checkoutOptions)
             .then(async (resp: any) => {
               try {
@@ -270,8 +273,11 @@ export default function EventRegistrationPage() {
         document.body.appendChild(script)
       } else {
         const errorData = await response.json()
+        console.error('Registration API error:', errorData)
         if (errorData.details) {
           setError(`Validation error: ${errorData.details.map((d: any) => d.message).join(', ')}`)
+        } else if (errorData.provider === 'cashfree') {
+          setError(`Payment gateway error: ${errorData.details || errorData.error}`)
         } else {
           setError(errorData.error || 'Registration failed')
         }

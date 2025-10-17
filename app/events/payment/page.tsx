@@ -39,19 +39,25 @@ function PaymentPageInner() {
       return
     }
 
-    // In production, fetch payment data from API
-    // For now, we'll simulate the data
-    setTimeout(() => {
-      setPaymentData({
-        registration_id: registrationId,
-        cashfree_order_id: 'order_' + Math.random().toString(36).substr(2, 9),
-        cashfree_payment_session_id: 'session_' + Math.random().toString(36).substr(2, 9),
-        cashfree_order_token: 'token_' + Math.random().toString(36).substr(2, 9),
-        amount: 1500,
-        currency: 'INR'
-      })
-      setLoading(false)
-    }, 1000)
+    // Fetch payment data from API
+    const fetchPaymentData = async () => {
+      try {
+        const response = await fetch(`/api/payments/${registrationId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPaymentData(data)
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to load payment details')
+        }
+      } catch (error) {
+        setError('Network error. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPaymentData()
   }, [registrationId])
 
   const handlePayment = async () => {

@@ -65,7 +65,11 @@ class CashfreeSDK {
     // Basic validation to surface clear errors during build/runtime
     if (!this.appId || !this.secretKey) {
       console.error('[Cashfree] Missing credentials. Ensure CASHFREE_APP_ID and CASHFREE_SECRET_KEY are set.')
+      throw new Error('Cashfree credentials are not configured')
     }
+
+    console.log(`[Cashfree] Initialized with environment: ${this.environment}`)
+    console.log(`[Cashfree] Base URL: ${this.baseURL}`)
   }
 
   /**
@@ -101,6 +105,9 @@ class CashfreeSDK {
     }
 
     try {
+      console.log(`[Cashfree] Creating order: ${url}`)
+      console.log(`[Cashfree] Payload:`, JSON.stringify(payload, null, 2))
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -122,16 +129,23 @@ class CashfreeSDK {
       }
 
       const data = await response.json()
-      
-      if (data.message !== 'OK') {
-        throw new Error(`Cashfree Error: ${data.message}`)
+
+      // Validate required fields instead of relying on a non-standard message property
+      const cfOrderId = data?.cf_order_id
+      const sessionId = data?.payment_session_id
+      const orderToken = data?.order_token
+      const orderIdResp = data?.order_id
+
+      if (!cfOrderId || !sessionId) {
+        // Include raw body for easier debugging
+        throw new Error(`Cashfree createOrder invalid response: ${JSON.stringify(data)}`)
       }
 
       return {
-        cf_order_id: data.cf_order_id,
-        payment_session_id: data.payment_session_id,
-        order_token: data.order_token,
-        order_id: data.order_id
+        cf_order_id: cfOrderId,
+        payment_session_id: sessionId,
+        order_token: orderToken,
+        order_id: orderIdResp
       }
     } catch (error) {
       console.error('Cashfree createOrder error:', error)

@@ -94,7 +94,9 @@ export async function POST(request: NextRequest) {
     const orderId = `ORDER_${registration.id}_${Date.now()}`
     
     // Create Cashfree order
-    const cashfreeOrder = await cashfree.createOrder({
+    let cashfreeOrder
+    try {
+      cashfreeOrder = await cashfree.createOrder({
       orderId: orderId,
       orderAmount: amountRupees,
       orderCurrency: event.currency,
@@ -110,7 +112,11 @@ export async function POST(request: NextRequest) {
         notifyUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
         paymentMethods: 'cc,dc,upi,nb,paylater'
       }
-    })
+      })
+    } catch (cfErr: any) {
+      console.error('Cashfree createOrder failed:', cfErr)
+      return NextResponse.json({ error: 'Payment gateway error', provider: 'cashfree', details: String(cfErr?.message || cfErr) }, { status: 502 })
+    }
     
     // Create payment record
     const { error: paymentError } = await supabaseAdmin
