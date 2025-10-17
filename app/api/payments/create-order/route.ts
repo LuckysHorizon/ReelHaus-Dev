@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-const Razorpay = require('razorpay')
+import { cashfree } from '@/lib/cashfree'
 import { z } from 'zod'
 
 const createOrderSchema = z.object({
@@ -15,11 +15,6 @@ const createOrderSchema = z.object({
     roll_no: z.string().min(1, 'Attendee roll number is required'),
     email: z.string().email('Invalid attendee email format').or(z.literal(''))
   })).optional()
-})
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!
 })
 
 export async function POST(request: NextRequest) {
@@ -94,16 +89,25 @@ export async function POST(request: NextRequest) {
     // Calculate total amount
     const amount = event.price_cents * validatedData.tickets
     
-    // Create Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amount,
-      currency: event.currency,
-      receipt: registration.id,
-      notes: {
-        event_id: event.id,
-        registration_id: registration.id,
-        tickets: validatedData.tickets.toString(),
-        event_title: event.title
+    // Generate unique order ID for Cashfree
+    const orderId = `ORDER_${registration.id}_${Date.now()}`
+    
+    // Create Cashfree order
+    const cashfreeOrder = await cashfree.createOrder({
+      orderId: orderId,
+      orderAmount: amount,
+      orderCurrency: event.currency,
+      orderNote: `Event Registration: ${event.title}`,
+      customerDetails: {
+        customerId: registration.id,
+        customerName: validatedData.name,
+        customerEmail: validatedData.email,
+        customerPhone: validatedData.phone
+      },
+      orderMeta: {
+        returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/events/payment/success?registration_id=${registration.id}`,
+        notifyUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
+        paymentMethods: 'cc,dc,upi,wallet,netbanking,paylater'
       }
     })
     
@@ -112,8 +116,8 @@ export async function POST(request: NextRequest) {
       .from('payments')
       .insert({
         registration_id: registration.id,
-        provider: 'razorpay',
-        provider_order_id: razorpayOrder.id,
+        provider: 'cashfree',
+        provider_order_id: cashfreeOrder.cf_order_id,
         amount_cents: amount,
         currency: event.currency,
         status: 'initiated'
@@ -127,13 +131,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order: {
-        id: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        receipt: razorpayOrder.receipt
+        id: cashfreeOrder.cf_order_id,
+        amount: amount,
+        currency: event.currency,
+        receipt: registration.id
       },
       registration_id: registration.id,
-      razorpay_key_id: process.env.RAZORPAY_KEY_ID,
+      cashfree_order_id: cashfreeOrder.cf_order_id,
+      cashfree_payment_session_id: cashfreeOrder.payment_session_id,
+      cashfree_order_token: cashfreeOrder.order_token,
       event: {
         title: event.title,
         price_cents: event.price_cents

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import crypto from 'crypto'
+import { cashfree } from '@/lib/cashfree'
 import { z } from 'zod'
 import { sendEmailsToAllAttendees } from '@/lib/resend'
 
 const verifyPaymentSchema = z.object({
-  razorpay_order_id: z.string(),
-  razorpay_payment_id: z.string(),
-  razorpay_signature: z.string(),
+  cashfree_order_id: z.string(),
+  cashfree_payment_id: z.string(),
   registration_id: z.string().uuid()
 })
 
@@ -16,20 +15,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = verifyPaymentSchema.parse(body)
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, registration_id } = validatedData
+    const { cashfree_order_id, cashfree_payment_id, registration_id } = validatedData
     
-    // Create signature for verification
-    const sign = razorpay_order_id + "|" + razorpay_payment_id
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-      .update(sign)
-      .digest('hex')
+    // Verify payment with Cashfree
+    const paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
     
-    // Verify signature
-    if (razorpay_signature !== expectedSignature) {
+    if (!paymentDetails || paymentDetails.length === 0) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Invalid payment signature' 
+        error: 'Payment not found' 
+      }, { status: 404 })
+    }
+    
+    const cashfreePayment = paymentDetails[0]
+    
+    // Check if payment was successful
+    if (cashfreePayment.payment_status !== 'SUCCESS') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment not successful' 
       }, { status: 400 })
     }
     
@@ -57,14 +61,14 @@ export async function POST(request: NextRequest) {
     }
     
     // Get payment record
-    const { data: payment, error: paymentError } = await supabaseAdmin
+    const { data: paymentRecord, error: paymentError } = await supabaseAdmin
       .from('payments')
       .select('*')
       .eq('registration_id', registration_id)
-      .eq('provider_order_id', razorpay_order_id)
+      .eq('provider_order_id', cashfree_order_id)
       .single()
     
-    if (paymentError || !payment) {
+    if (paymentError || !paymentRecord) {
       return NextResponse.json({ 
         success: false, 
         error: 'Payment record not found' 
@@ -75,10 +79,10 @@ export async function POST(request: NextRequest) {
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')
       .update({
-        provider_payment_id: razorpay_payment_id,
+        provider_payment_id: cashfree_payment_id,
         status: 'succeeded'
       })
-      .eq('id', payment.id)
+      .eq('id', paymentRecord.id)
     
     if (updatePaymentError) {
       console.error('Failed to update payment record:', updatePaymentError)
@@ -144,7 +148,7 @@ export async function POST(request: NextRequest) {
         eventDate,
         eventTime,
         eventLocation: 'TBD', // Add venue field to events table if needed
-        paymentId: razorpay_payment_id,
+        paymentId: cashfree_payment_id,
       }).catch((emailError) => {
         console.error('Email sending failed for payment verification:', emailError)
         // Don't fail the payment verification if email fails
