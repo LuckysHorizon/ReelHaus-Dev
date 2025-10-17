@@ -95,7 +95,8 @@ class CashfreeSDK {
       order_meta: {
         return_url: params.orderMeta?.returnUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/events/payment/success`,
         notify_url: params.orderMeta?.notifyUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
-        payment_methods: params.orderMeta?.paymentMethods || 'cc,dc,upi,wallet,netbanking,paylater'
+        // Allowed tokens: cc, dc, ppc, ccc, emi, paypal, upi, nb, app, paylater
+        payment_methods: params.orderMeta?.paymentMethods || 'cc,dc,upi,nb,paylater'
       }
     }
 
