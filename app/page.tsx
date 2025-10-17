@@ -37,9 +37,9 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": "https://reelhaus.com/",
-    name: "ReelHaus | Premium Club Events Portal",
+    name: "ReelHaus | College Club Events Portal | IARE",
     description:
-      "Discover and register for exclusive club events. Secure payments, instant email confirmations, and seamless event management.",
+      "Discover and register for exclusive college club events. Secure payments, instant email confirmations, and seamless event management.",
     url: "https://reelhaus.com/",
     mainEntity: {
       "@type": "Organization",

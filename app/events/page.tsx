@@ -28,7 +28,6 @@ type Event = {
 // Metadata removed - cannot export from client component
 
 // No mock data - only real events from API
-const categories = ["All", "Electronic", "Acoustic", "VIP", "Jazz", "Tech House", "Chill"]
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -90,26 +89,7 @@ export default function EventsPage() {
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-8 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {categories.map((category) => (
-              <Badge 
-                key={category}
-                variant={category === "All" ? "default" : "outline"}
-                className={`px-4 py-2 cursor-pointer transition-all ${
-                  category === "All" 
-                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg" 
-                    : "border-red-400 text-red-400 hover:bg-red-500 hover:text-white hover:shadow-lg"
-                }`}
-              >
-                {category}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Category Filter removed as requested */}
 
       {/* Events Grid */}
       <section className="py-16 px-4">
@@ -125,7 +105,7 @@ export default function EventsPage() {
               <Card key={event.id} className="glass-border-enhanced overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={event.cover_image_url}
+                    src={event.cover_image_url || "/placeholder.jpg"}
                     alt={event.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -202,25 +182,7 @@ export default function EventsPage() {
         </div>
       </section>
 
-      {/* Newsletter Signup */}
-      <section className="py-16 px-4 bg-gradient-to-r from-black/50 to-gray-900/50">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold mb-6 text-red-400">Stay Updated</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Subscribe to our newsletter for early access to new events and exclusive member benefits.
-          </p>
-          <div className="max-w-md mx-auto flex gap-4">
-            <input 
-              type="email" 
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
-            />
-            <ShinyButton className="px-6 py-3">
-              Subscribe
-            </ShinyButton>
-          </div>
-        </div>
-      </section>
+      {/* Newsletter Signup removed as requested */}
 
       <AppverseFooter />
     </main>

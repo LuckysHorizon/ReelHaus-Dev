@@ -9,7 +9,7 @@ import { QuickNavigation } from "@/components/quick-navigation"
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const metadata: Metadata = {
-  title: "ReelHaus | Premium Club Events Portal",
+  title: "ReelHaus | College Club Events Portal | IARE",
   description:
     "Discover and register for exclusive club events. Secure payments, instant email confirmations, and seamless event management.",
   generator: "Next.js",
