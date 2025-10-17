@@ -10,14 +10,15 @@ import { useSearchParams } from "next/navigation"
 
 declare global {
   interface Window {
-    Razorpay: any
+    Cashfree: any
   }
 }
 
 interface PaymentData {
   registration_id: string
-  razorpay_order_id: string
-  razorpay_key_id: string
+  cashfree_order_id: string
+  cashfree_payment_session_id: string
+  cashfree_order_token: string
   amount: number
   currency: string
 }
@@ -43,8 +44,9 @@ function PaymentPageInner() {
     setTimeout(() => {
       setPaymentData({
         registration_id: registrationId,
-        razorpay_order_id: 'order_' + Math.random().toString(36).substr(2, 9),
-        razorpay_key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_key',
+        cashfree_order_id: 'order_' + Math.random().toString(36).substr(2, 9),
+        cashfree_payment_session_id: 'session_' + Math.random().toString(36).substr(2, 9),
+        cashfree_order_token: 'token_' + Math.random().toString(36).substr(2, 9),
         amount: 1500,
         currency: 'INR'
       })
@@ -58,38 +60,29 @@ function PaymentPageInner() {
     setProcessing(true)
 
     try {
-      // Load Razorpay script
+      // Load Cashfree script
       const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js'
       script.onload = () => {
-        const options = {
-          key: paymentData.razorpay_key_id,
-          amount: paymentData.amount * 100, // Convert to paise
-          currency: paymentData.currency,
-          name: 'ReelHaus',
-          description: 'Event Registration Payment',
-          order_id: paymentData.razorpay_order_id,
-          handler: function (response: any) {
-            // Payment successful
-            window.location.href = `/events/payment/success?payment_id=${response.razorpay_payment_id}&registration_id=${paymentData.registration_id}`
-          },
-          prefill: {
-            name: 'John Doe',
-            email: 'john@example.com',
-            contact: '+919876543210'
-          },
-          theme: {
-            color: '#DC2626'
-          },
-          modal: {
-            ondismiss: function() {
-              setProcessing(false)
-            }
-          }
+        const cashfree = new window.Cashfree({
+          mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'sandbox'
+        })
+        
+        const checkoutOptions = {
+          paymentSessionId: paymentData.cashfree_payment_session_id,
+          redirectTarget: "_self"
         }
-
-        const rzp = new window.Razorpay(options)
-        rzp.open()
+        
+        cashfree.checkout(checkoutOptions)
+          .then((response: any) => {
+            // Payment successful
+            window.location.href = `/events/payment/success?payment_id=${response.cf_payment_id}&registration_id=${paymentData.registration_id}`
+          })
+          .catch((error: any) => {
+            console.error('Payment failed:', error)
+            setError('Payment failed. Please try again.')
+            setProcessing(false)
+          })
       }
       script.onerror = () => {
         setError('Failed to load payment gateway')
@@ -204,7 +197,7 @@ function PaymentPageInner() {
               {processing ? 'Processing...' : `Pay ₹${paymentData?.amount}`}
             </ShinyButton>
             <p className="text-sm text-gray-400 mt-4">
-              You will be redirected to Razorpay's secure payment page
+              You will be redirected to Cashfree's secure payment page
             </p>
           </div>
 
