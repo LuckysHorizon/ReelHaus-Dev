@@ -36,29 +36,36 @@ function PaymentSuccessInner() {
         // Get the order ID from payment data or use a fallback
         const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
         
-        console.log('[Success Page] Attempting payment verification with:', {
-          orderId,
-          paymentId,
-          registrationId,
-          paymentData
-        })
-        
-        const verifyResponse = await fetch('/api/payments/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cashfree_order_id: orderId,
-            cashfree_payment_id: paymentId || '',
-            registration_id: registrationId
-          })
-        })
-        
-        if (verifyResponse.ok) {
-          console.log('Payment verified successfully with Cashfree')
-          setEmailSent(true)
-          return
+        // If no order ID from payment data, skip Cashfree verification and go straight to database update
+        if (!orderId) {
+          console.log('[Success Page] No order ID available, skipping Cashfree verification and updating database directly')
         } else {
-          console.log('Cashfree verification failed, trying fallback update')
+          console.log('[Success Page] Attempting payment verification with:', {
+            orderId,
+            paymentId,
+            registrationId,
+            paymentData
+          })
+          
+          const verifyResponse = await fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cashfree_order_id: orderId,
+              cashfree_payment_id: paymentId || '',
+              registration_id: registrationId
+            })
+          })
+          
+          if (verifyResponse.ok) {
+            console.log('Payment verified successfully with Cashfree')
+            if (!emailSent) {
+              setEmailSent(true)
+            }
+            return
+          } else {
+            console.log('Cashfree verification failed, trying fallback update')
+          }
         }
         
         // Fallback: Update payment status directly
@@ -106,16 +113,24 @@ function PaymentSuccessInner() {
         })
         
         if (emailResponse.ok) {
-          setEmailSent(true)
-          console.log('Confirmation email sent automatically')
+          if (!emailSent) {
+            setEmailSent(true)
+            console.log('Confirmation email sent automatically')
+          }
         }
       } catch (error) {
         console.error('Failed to update payment status or send email:', error)
       }
     }
 
-    // Update payment status and send email after a short delay to ensure payment data is fetched
-    setTimeout(updatePaymentStatusAndSendEmail, 1000)
+    // Fetch payment data first, then update payment status
+    const fetchDataAndUpdate = async () => {
+      await fetchPaymentData()
+      // Wait a bit for payment data to be set
+      setTimeout(updatePaymentStatusAndSendEmail, 500)
+    }
+    
+    fetchDataAndUpdate()
     
     // Also retry after 5 seconds to ensure database is updated
     const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
@@ -208,7 +223,9 @@ function PaymentSuccessInner() {
       
       if (verifyResponse.ok) {
         console.log('Payment verified successfully with Cashfree')
-        setEmailSent(true)
+        if (!emailSent) {
+          setEmailSent(true)
+        }
         return
       } else {
         console.log('Cashfree verification failed, trying fallback update')
@@ -259,8 +276,10 @@ function PaymentSuccessInner() {
       })
       
       if (response.ok) {
-        setEmailSent(true)
-        console.log('Email sent successfully')
+        if (!emailSent) {
+          setEmailSent(true)
+          console.log('Email sent successfully')
+        }
       } else {
         console.error('Failed to send email')
       }
