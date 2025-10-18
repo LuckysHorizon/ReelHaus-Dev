@@ -257,9 +257,11 @@ export default function EventRegistrationPage() {
                 const verifyJson = await verifyResponse.json().catch(() => ({}))
                 
                 if (verifyResponse.ok && verifyJson?.success) {
+                  console.log('Payment verification successful')
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}`)
                 } else {
-                  // Still redirect to success page - webhook will handle verification
+                  console.error('Payment verification failed:', verifyJson)
+                  // Still redirect to success page - success page will handle database update
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}&pending_verification=true`)
                 }
               } catch (verifyError) {

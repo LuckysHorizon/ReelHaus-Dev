@@ -49,16 +49,8 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    if (!paymentDetails || paymentDetails.length === 0) {
-      // Don't fail - proceed with email sending since user reached success page
-    } else {
-      const cashfreePayment = paymentDetails[0]
-      
-      // Check if payment was successful
-      if (cashfreePayment.payment_status !== 'SUCCESS') {
-        // Don't fail - proceed with email sending since user reached success page
-      }
-    }
+    // Since user reached success page, assume payment is successful
+    // Update database regardless of Cashfree API verification
     
     // Get registration details with event information
     const { data: registration, error: regError } = await supabaseAdmin
@@ -110,7 +102,8 @@ export async function POST(request: NextRequest) {
     if (updatePaymentError) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Failed to update payment record' 
+        error: 'Failed to update payment record',
+        details: String(updatePaymentError)
       }, { status: 500 })
     }
     
@@ -123,7 +116,8 @@ export async function POST(request: NextRequest) {
     if (updateRegError) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Failed to update registration status' 
+        error: 'Failed to update registration status',
+        details: String(updateRegError)
       }, { status: 500 })
     }
     

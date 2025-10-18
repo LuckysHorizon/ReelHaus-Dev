@@ -43,6 +43,9 @@ function PaymentSuccessInner() {
         
         if (statusResponse.ok) {
           console.log('Payment status updated successfully')
+        } else {
+          const errorData = await statusResponse.json().catch(() => ({}))
+          console.error('Failed to update payment status:', errorData)
         }
         
         // Then, send confirmation email
@@ -124,6 +127,9 @@ function PaymentSuccessInner() {
       
       if (statusResponse.ok) {
         console.log('Payment status updated successfully')
+      } else {
+        const errorData = await statusResponse.json().catch(() => ({}))
+        console.error('Failed to update payment status:', errorData)
       }
       
       // Then, send confirmation email
