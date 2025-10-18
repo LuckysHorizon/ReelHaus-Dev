@@ -29,109 +29,35 @@ function PaymentSuccessInner() {
       return
     }
 
-    // Since user reached success page, payment is successful - update database immediately
-    const updatePaymentStatusAndSendEmail = async () => {
+    // The webhook should handle database updates automatically
+    // We'll just fetch the registration data and show success
+    // If webhook fails, we have a fallback mechanism
+    const checkPaymentStatus = async () => {
       try {
-        console.log('[Success Page] Payment successful - updating database immediately')
-        
-        // Update payment status directly (no verification needed since user reached success page)
-        const statusResponse = await fetch('/api/payments/update-status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            registration_id: registrationId,
-            payment_id: paymentId
-          })
-        })
-        
-        if (statusResponse.ok) {
-          const responseData = await statusResponse.json()
-          console.log('Payment status updated successfully:', responseData)
-        } else {
-          const errorData = await statusResponse.json().catch(() => ({}))
-          console.error('Failed to update payment status:', errorData)
-          
-          // Try force update as fallback
-          try {
-            const forceResponse = await fetch('/api/force-update-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                registration_id: registrationId,
-                payment_id: paymentId
-              })
-            })
-            
-            if (forceResponse.ok) {
-              console.log('Payment status force updated successfully')
-            } else {
-              console.error('Force update also failed')
-            }
-          } catch (forceError) {
-            console.error('Force update error:', forceError)
-          }
-        }
-        
-        // Send confirmation email
-        const emailResponse = await fetch('/api/send-confirmation-registration', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ registration_id: registrationId })
-        })
-        
-        if (emailResponse.ok) {
-          if (!emailSent) {
-            setEmailSent(true)
-            console.log('Confirmation email sent automatically')
-          }
-        }
-      } catch (error) {
-        console.error('Failed to update payment status or send email:', error)
-      }
-    }
-
-    // Update payment status immediately since user reached success page
-    updatePaymentStatusAndSendEmail()
-    
-    // Also retry after 5 seconds to ensure database is updated
-    const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
-
-    // Fetch registration data from API
-    const fetchRegistrationData = async () => {
-      try {
+        // Check if payment is already processed by webhook
         const response = await fetch(`/api/registrations/${registrationId}`)
         if (response.ok) {
           const data = await response.json()
           setRegistrationData(data)
-        } else {
-          const errorData = await response.json().catch(() => ({}))
           
-          // If verification is pending, retry a few times
-          if (pendingVerification && retryCount < 5) {
-            setTimeout(() => {
-              setRetryCount(prev => prev + 1)
-              fetchRegistrationData()
-            }, 2000) // Wait 2 seconds before retry
-            return
+          // If payment is already processed, mark email as sent
+          if (data.status === 'paid') {
+            setEmailSent(true)
           }
         }
       } catch (error) {
-        // If verification is pending, retry a few times
-        if (pendingVerification && retryCount < 5) {
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1)
-            fetchRegistrationData()
-          }, 2000)
-          return
-        }
-      } finally {
-        if (!pendingVerification || retryCount >= 5) {
-          setLoading(false)
-        }
+        console.error('Failed to fetch registration data:', error)
       }
     }
 
-    fetchRegistrationData()
+    // Check payment status immediately
+    checkPaymentStatus()
+    
+    // Also retry after 3 seconds in case webhook is still processing
+    const retryTimer = setTimeout(checkPaymentStatus, 3000)
+
+    // Set loading to false after initial check
+    setTimeout(() => setLoading(false), 1000)
 
     // Cleanup timers
     return () => {
@@ -144,24 +70,7 @@ function PaymentSuccessInner() {
     
     setSendingEmail(true)
     try {
-      console.log('[Manual Resend] Updating payment status and sending email')
-      
-      // Update payment status directly
-      const statusResponse = await fetch('/api/payments/update-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          registration_id: registrationId,
-          payment_id: paymentId
-        })
-      })
-      
-      if (statusResponse.ok) {
-        console.log('Payment status updated successfully')
-      } else {
-        const errorData = await statusResponse.json().catch(() => ({}))
-        console.error('Failed to update payment status:', errorData)
-      }
+      console.log('[Manual Resend] Sending confirmation email')
       
       // Send confirmation email
       const response = await fetch('/api/send-confirmation-registration', {
@@ -171,10 +80,8 @@ function PaymentSuccessInner() {
       })
       
       if (response.ok) {
-        if (!emailSent) {
-          setEmailSent(true)
-          console.log('Email sent successfully')
-        }
+        setEmailSent(true)
+        console.log('Email sent successfully')
       } else {
         console.error('Failed to send email')
       }

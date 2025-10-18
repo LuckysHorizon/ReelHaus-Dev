@@ -3,6 +3,13 @@ import { supabaseAdmin } from '@/lib/supabase'
 import crypto from 'crypto'
 import { sendEmailsToAllAttendees } from '@/lib/resend'
 
+// Disable body parsing to get raw body for signature verification
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
+
 /**
  * Cashfree Webhook Handler
  * 
@@ -27,14 +34,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
     }
     
-    // Verify webhook signature
+    // Verify webhook signature using webhook secret (not API secret)
+    const webhookSecret = process.env.CASHFREE_WEBHOOK_SECRET || process.env.CASHFREE_SECRET_KEY
+    if (!webhookSecret) {
+      console.error('Missing CASHFREE_WEBHOOK_SECRET environment variable')
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
+    }
+    
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.CASHFREE_SECRET_KEY!)
+      .createHmac('sha256', webhookSecret)
       .update(body)
       .digest('base64')
     
     if (signature !== expectedSignature) {
       console.error('Invalid Cashfree webhook signature')
+      console.error('Expected:', expectedSignature)
+      console.error('Received:', signature)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
