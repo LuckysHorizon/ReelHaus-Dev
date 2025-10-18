@@ -18,66 +18,26 @@ function PaymentSuccessInner() {
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
-  const [emailSent, setEmailSent] = useState(false)
-  const [sendingEmail, setSendingEmail] = useState(false)
   
 
   useEffect(() => {
-    console.log('Success page loaded with params:', {
-      paymentId,
-      registrationId,
-      status,
-      pendingVerification
-    })
-    
     if (!registrationId) {
-      console.error('No registration ID found in URL parameters')
       setLoading(false)
       return
     }
 
-    // Automatically send email when success page loads (if not already sent)
-    const sendEmailOnSuccess = async () => {
-      if (!emailSent && !sendingEmail) {
-        console.log('Success page loaded - attempting to send confirmation email automatically')
-        try {
-          const response = await fetch('/api/test-webhook', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ registration_id: registrationId })
-          })
-          
-          if (response.ok) {
-            setEmailSent(true)
-            console.log('Confirmation email sent automatically on success page load')
-          } else {
-            console.log('Automatic email sending failed, user can use manual button')
-          }
-        } catch (error) {
-          console.error('Error sending automatic email:', error)
-        }
-      }
-    }
-
-    // Send email automatically after a short delay to ensure page is loaded
-    const emailTimer = setTimeout(sendEmailOnSuccess, 1000)
-
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
       try {
-        console.log(`Fetching registration data for ID: ${registrationId}`)
         const response = await fetch(`/api/registrations/${registrationId}`)
         if (response.ok) {
           const data = await response.json()
-          console.log('Registration data received:', data)
           setRegistrationData(data)
         } else {
           const errorData = await response.json().catch(() => ({}))
-          console.error('Failed to fetch registration data:', errorData)
           
           // If verification is pending, retry a few times
           if (pendingVerification && retryCount < 5) {
-            console.log(`Retrying fetch (attempt ${retryCount + 1}/5)...`)
             setTimeout(() => {
               setRetryCount(prev => prev + 1)
               fetchRegistrationData()
@@ -86,11 +46,8 @@ function PaymentSuccessInner() {
           }
         }
       } catch (error) {
-        console.error('Error fetching registration data:', error)
-        
         // If verification is pending, retry a few times
         if (pendingVerification && retryCount < 5) {
-          console.log(`Retrying fetch after error (attempt ${retryCount + 1}/5)...`)
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
             fetchRegistrationData()
@@ -105,37 +62,8 @@ function PaymentSuccessInner() {
     }
 
     fetchRegistrationData()
+  }, [paymentId, registrationId])
 
-    // Cleanup timer
-    return () => {
-      clearTimeout(emailTimer)
-    }
-  }, [paymentId, registrationId, emailSent, sendingEmail])
-
-  const sendEmailManually = async () => {
-    if (!registrationId || sendingEmail) return
-    
-    setSendingEmail(true)
-    try {
-      console.log('Sending email manually for registration:', registrationId)
-      const response = await fetch('/api/test-webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registration_id: registrationId })
-      })
-      
-      if (response.ok) {
-        setEmailSent(true)
-        console.log('Email sent successfully')
-      } else {
-        console.error('Failed to send email')
-      }
-    } catch (error) {
-      console.error('Error sending email:', error)
-    } finally {
-      setSendingEmail(false)
-    }
-  }
 
   
 
@@ -292,21 +220,9 @@ function PaymentSuccessInner() {
                   <Mail className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Email Confirmation</h3>
-                <p className="text-sm text-gray-400 max-w-xs mx-auto mb-3">
+                <p className="text-sm text-gray-400 max-w-xs mx-auto">
                   A confirmation email with your ticket details has been sent to {registrationData?.email || 'your registered email'}
                 </p>
-                {!emailSent && (
-                  <button
-                    onClick={sendEmailManually}
-                    disabled={sendingEmail}
-                    className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-full border border-red-500/30 transition-colors disabled:opacity-50"
-                  >
-                    {sendingEmail ? 'Sending...' : 'Resend Email'}
-                  </button>
-                )}
-                {emailSent && (
-                  <p className="text-xs text-green-400">✓ Email sent successfully!</p>
-                )}
               </div>
               <div className="text-center px-2">
                 <div className="bg-red-500/15 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">

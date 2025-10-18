@@ -38,9 +38,6 @@ export async function POST(request: NextRequest) {
     const eventType = (rawType || '').toString().trim().toLowerCase()
     const orderId = event.data?.order?.order_id || event.data?.order_id
     
-    console.log(`Cashfree webhook received: ${eventType} for order ${orderId}`)
-    console.log(`Webhook event data:`, JSON.stringify(event, null, 2))
-    
     // Handle different event types
     switch (eventType) {
       case 'payment_success_webhook':
@@ -92,7 +89,6 @@ async function handlePaymentSuccess(event: any) {
       .single()
     
     if (existingPayment && existingPayment.status === 'succeeded') {
-      console.log(`Payment ${payment.cf_payment_id} already processed`)
       return NextResponse.json({ status: 'already_processed' })
     }
     
@@ -116,7 +112,6 @@ async function handlePaymentSuccess(event: any) {
       .single()
     
     if (paymentError || !paymentRecord) {
-      console.error('Payment record not found for order:', orderId)
       return NextResponse.json({ error: 'Payment record not found' }, { status: 404 })
     }
     
@@ -133,7 +128,6 @@ async function handlePaymentSuccess(event: any) {
       .eq('id', paymentRecord.id)
     
     if (updatePaymentError) {
-      console.error('Failed to update payment:', updatePaymentError)
       return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
     }
     
@@ -144,7 +138,6 @@ async function handlePaymentSuccess(event: any) {
       .eq('id', registration.id)
     
     if (updateRegError) {
-      console.error('Failed to update registration:', updateRegError)
       return NextResponse.json({ error: 'Failed to update registration' }, { status: 500 })
     }
     
@@ -156,7 +149,6 @@ async function handlePaymentSuccess(event: any) {
       })
     
     if (decrementError) {
-      console.error('Failed to decrement seats:', decrementError)
       // Note: In production, you might want to implement a compensation mechanism
     }
     
@@ -193,17 +185,12 @@ async function handlePaymentSuccess(event: any) {
         eventLocation: 'TBD', // Add venue field to events table if needed
         paymentId: payment.cf_payment_id,
       }).catch((emailError) => {
-        console.error('Email sending failed for Cashfree webhook:', emailError)
         // Don't fail the webhook if email fails
       })
-    } else {
-      console.warn('RESEND_API_KEY not configured - skipping email confirmation')
     }
     
-    console.log(`Successfully processed payment for order ${orderId}`)
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling Cashfree payment success:', error)
     return NextResponse.json({ error: 'Failed to process payment success' }, { status: 500 })
   }
 }
@@ -226,7 +213,7 @@ async function handlePaymentFailed(event: any) {
       .eq('provider_order_id', orderId)
     
     if (updateError) {
-      console.error('Failed to update payment status:', updateError)
+      // Log error but don't fail
     }
     
     // Update registration status to failed
@@ -240,13 +227,11 @@ async function handlePaymentFailed(event: any) {
         .single()).data?.registration_id)
     
     if (regUpdateError) {
-      console.error('Failed to update registration status:', regUpdateError)
+      // Log error but don't fail
     }
     
-    console.log(`Payment failed for order ${orderId}`)
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    console.error('Error handling Cashfree payment failure:', error)
     return NextResponse.json({ error: 'Failed to process payment failure' }, { status: 500 })
   }
 }

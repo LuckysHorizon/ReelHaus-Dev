@@ -18,10 +18,6 @@ export async function POST(request: NextRequest) {
     const { cashfree_order_id, cashfree_payment_id, registration_id } = validatedData
     
     // Verify payment with Cashfree
-    console.log(`[Payment Verify] Verifying payment for order: ${cashfree_order_id}`)
-    console.log(`[Payment Verify] Payment ID: ${cashfree_payment_id}`)
-    console.log(`[Payment Verify] Registration ID: ${registration_id}`)
-    
     let paymentDetails
     let retryCount = 0
     const maxRetries = 3
@@ -29,7 +25,6 @@ export async function POST(request: NextRequest) {
     while (retryCount < maxRetries) {
       try {
         paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
-        console.log(`[Payment Verify] Cashfree payment details (attempt ${retryCount + 1}):`, paymentDetails)
         
         if (paymentDetails && paymentDetails.length > 0) {
           break // Success, exit retry loop
@@ -37,18 +32,14 @@ export async function POST(request: NextRequest) {
         
         retryCount++
         if (retryCount < maxRetries) {
-          console.log(`[Payment Verify] No payment details found, retrying in 2 seconds... (${retryCount}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         }
       } catch (cfError) {
-        console.error(`[Payment Verify] Cashfree API error (attempt ${retryCount + 1}):`, cfError)
         retryCount++
         
         if (retryCount < maxRetries) {
-          console.log(`[Payment Verify] Retrying in 2 seconds... (${retryCount}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         } else {
-          console.error(`[Payment Verify] All retry attempts failed`)
           return NextResponse.json({ 
             success: false, 
             error: 'Failed to verify payment with Cashfree after retries',
@@ -59,20 +50,13 @@ export async function POST(request: NextRequest) {
     }
     
     if (!paymentDetails || paymentDetails.length === 0) {
-      console.warn(`[Payment Verify] No payment details found for order: ${cashfree_order_id}`)
-      console.log(`[Payment Verify] Proceeding with email sending anyway since user reached success page`)
       // Don't fail - proceed with email sending since user reached success page
     } else {
       const cashfreePayment = paymentDetails[0]
-      console.log(`[Payment Verify] Payment status: ${cashfreePayment.payment_status}`)
       
       // Check if payment was successful
       if (cashfreePayment.payment_status !== 'SUCCESS') {
-        console.warn(`[Payment Verify] Payment not successful. Status: ${cashfreePayment.payment_status}`)
-        console.log(`[Payment Verify] Proceeding with email sending anyway since user reached success page`)
         // Don't fail - proceed with email sending since user reached success page
-      } else {
-        console.log(`[Payment Verify] Payment verified successfully: ${cashfree_payment_id}`)
       }
     }
     
@@ -115,7 +99,6 @@ export async function POST(request: NextRequest) {
     }
     
     // Update payment record with payment ID
-    console.log(`[Payment Verify] Updating payment record: ${paymentRecord.id}`)
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')
       .update({
@@ -125,31 +108,24 @@ export async function POST(request: NextRequest) {
       .eq('id', paymentRecord.id)
     
     if (updatePaymentError) {
-      console.error('Failed to update payment record:', updatePaymentError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update payment record' 
       }, { status: 500 })
     }
     
-    console.log(`[Payment Verify] Payment record updated successfully`)
-    
     // Update registration status
-    console.log(`[Payment Verify] Updating registration status to 'paid': ${registration_id}`)
     const { error: updateRegError } = await supabaseAdmin
       .from('registrations')
       .update({ status: 'paid' })
       .eq('id', registration_id)
     
     if (updateRegError) {
-      console.error('Failed to update registration status:', updateRegError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update registration status' 
       }, { status: 500 })
     }
-    
-    console.log(`[Payment Verify] Registration status updated successfully`)
     
     // Atomically decrement event seats
     const { error: decrementError } = await supabaseAdmin
@@ -159,13 +135,10 @@ export async function POST(request: NextRequest) {
       })
     
     if (decrementError) {
-      console.error('Failed to decrement seats:', decrementError)
       // Note: In production, you might want to implement a compensation mechanism
     }
-    // Send confirmation emails to all attendees (non-blocking but with proper error handling)
-    console.log(`[Payment Verify] Checking email configuration...`)
+    // Send confirmation emails to all attendees
     if (process.env.RESEND_API_KEY) {
-      console.log(`[Payment Verify] Sending confirmation emails...`)
       const event = registration.events
       const eventDate = new Date(event.start_datetime).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -198,13 +171,10 @@ export async function POST(request: NextRequest) {
           eventLocation: 'TBD', // Add venue field to events table if needed
           paymentId: cashfree_payment_id,
         })
-        console.log(`[Payment Verify] Confirmation emails sent successfully`)
       } catch (emailError) {
-        console.error('Email sending failed for payment verification:', emailError)
         // Don't fail the payment verification if email fails
       }
     } else {
-      console.warn('RESEND_API_KEY not configured - skipping email confirmation')
     }
 
     return NextResponse.json({

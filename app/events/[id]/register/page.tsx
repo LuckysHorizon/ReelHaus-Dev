@@ -231,19 +231,12 @@ export default function EventRegistrationPage() {
             redirectTarget: '_self'
           }
 
-          console.log('Opening Cashfree checkout with session:', data.cashfree_payment_session_id)
           cashfree.checkout(checkoutOptions)
             .then(async (resp: any) => {
-              console.log('Cashfree checkout response:', resp)
-              console.log('Response type:', typeof resp)
-              console.log('Response keys:', Object.keys(resp || {}))
-              
               // Handle different response formats
               const paymentId = resp?.cf_payment_id || resp?.payment_id || resp?.id || resp
-              console.log('Extracted payment ID:', paymentId)
               
               if (!paymentId) {
-                console.error('No payment ID found in response:', resp)
                 setError('Payment completed but verification failed')
                 setSubmitting(false)
                 return
@@ -251,12 +244,6 @@ export default function EventRegistrationPage() {
               
               try {
                 // Step 2: Verify payment on backend
-                console.log('Calling verification API with:', {
-                  cashfree_order_id: data.cashfree_order_id,
-                  cashfree_payment_id: paymentId,
-                  registration_id: data.registration_id
-                })
-                
                 const verifyResponse = await fetch('/api/payments/verify', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -268,32 +255,14 @@ export default function EventRegistrationPage() {
                 })
                 
                 const verifyJson = await verifyResponse.json().catch(() => ({}))
-                console.log('Payment verification response:', verifyJson)
                 
                 if (verifyResponse.ok && verifyJson?.success) {
-                  console.log('Payment verification successful - emails sent')
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}`)
                 } else {
-                  console.error('Payment verification failed:', verifyJson)
-                  // Try to send email manually as fallback
-                  console.log('Attempting to send email manually as fallback...')
-                  try {
-                    const emailResponse = await fetch('/api/test-webhook', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ registration_id: data.registration_id })
-                    })
-                    if (emailResponse.ok) {
-                      console.log('Fallback email sent successfully')
-                    }
-                  } catch (emailError) {
-                    console.error('Fallback email failed:', emailError)
-                  }
-                  // Still redirect to success page
+                  // Still redirect to success page - webhook will handle verification
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}&pending_verification=true`)
                 }
               } catch (verifyError) {
-                console.error('Payment verification error:', verifyError)
                 const reason = encodeURIComponent('network_error')
                 router.push(`/events/payment/failure?status=failure&reason=${reason}`)
               }
