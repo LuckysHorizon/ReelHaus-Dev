@@ -16,6 +16,7 @@ function PaymentSuccessInner() {
   const pendingVerification = searchParams.get('pending_verification')
   
   const [registrationData, setRegistrationData] = useState<any>(null)
+  const [paymentData, setPaymentData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
   const [emailSent, setEmailSent] = useState(false)
@@ -31,7 +32,26 @@ function PaymentSuccessInner() {
     // Automatically update payment status and send email
     const updatePaymentStatusAndSendEmail = async () => {
       try {
-        // First, update payment status in database
+        // First, try to verify payment with Cashfree
+        const verifyResponse = await fetch('/api/payments/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cashfree_order_id: paymentData?.cashfree_order_id || '',
+            cashfree_payment_id: paymentId || '',
+            registration_id: registrationId
+          })
+        })
+        
+        if (verifyResponse.ok) {
+          console.log('Payment verified successfully with Cashfree')
+          setEmailSent(true)
+          return
+        } else {
+          console.log('Cashfree verification failed, trying fallback update')
+        }
+        
+        // Fallback: Update payment status directly
         const statusResponse = await fetch('/api/payments/update-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -90,6 +110,19 @@ function PaymentSuccessInner() {
     // Also retry after 5 seconds to ensure database is updated
     const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
 
+    // Fetch payment data from API
+    const fetchPaymentData = async () => {
+      try {
+        const response = await fetch(`/api/payments/${registrationId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPaymentData(data)
+        }
+      } catch (error) {
+        console.error('Error fetching payment data:', error)
+      }
+    }
+
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
       try {
@@ -125,6 +158,7 @@ function PaymentSuccessInner() {
       }
     }
 
+    fetchPaymentData()
     fetchRegistrationData()
 
     // Cleanup timers
@@ -138,7 +172,26 @@ function PaymentSuccessInner() {
     
     setSendingEmail(true)
     try {
-      // First, ensure payment status is updated
+      // First, try to verify payment with Cashfree
+      const verifyResponse = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cashfree_order_id: paymentData?.cashfree_order_id || '',
+          cashfree_payment_id: paymentId || '',
+          registration_id: registrationId
+        })
+      })
+      
+      if (verifyResponse.ok) {
+        console.log('Payment verified successfully with Cashfree')
+        setEmailSent(true)
+        return
+      } else {
+        console.log('Cashfree verification failed, trying fallback update')
+      }
+      
+      // Fallback: Update payment status directly
       const statusResponse = await fetch('/api/payments/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

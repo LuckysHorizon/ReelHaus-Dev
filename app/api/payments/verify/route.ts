@@ -95,11 +95,13 @@ export async function POST(request: NextRequest) {
       .from('payments')
       .update({
         provider_payment_id: cashfree_payment_id,
-        status: 'succeeded'
+        status: 'succeeded',
+        updated_at: new Date().toISOString()
       })
       .eq('id', paymentRecord.id)
     
     if (updatePaymentError) {
+      console.error('Payment update error:', updatePaymentError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update payment record',
@@ -107,19 +109,27 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
     
+    console.log(`Payment ${paymentRecord.id} updated to succeeded status`)
+    
     // Update registration status
     const { error: updateRegError } = await supabaseAdmin
       .from('registrations')
-      .update({ status: 'paid' })
+      .update({ 
+        status: 'paid',
+        updated_at: new Date().toISOString()
+      })
       .eq('id', registration_id)
     
     if (updateRegError) {
+      console.error('Registration update error:', updateRegError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update registration status',
         details: String(updateRegError)
       }, { status: 500 })
     }
+    
+    console.log(`Registration ${registration_id} updated to paid status`)
     
     // Atomically decrement event seats
     const { error: decrementError } = await supabaseAdmin
