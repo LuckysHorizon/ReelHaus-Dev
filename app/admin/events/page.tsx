@@ -232,11 +232,13 @@ export default function AdminEventsPage() {
         }
       })
 
+      const data = await response.json()
+
       if (response.ok) {
         await fetchEvents(token)
-        alert('Event deleted successfully!')
+        alert(data.message || 'Event deleted successfully!')
       } else {
-        alert('Failed to delete event')
+        alert(data.details || data.error || 'Failed to delete event')
       }
     } catch (error) {
       alert('Network error')

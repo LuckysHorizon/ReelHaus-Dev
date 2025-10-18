@@ -104,14 +104,76 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const { error } = await supabaseAdmin
+    console.log(`[Delete Event] Admin ${admin.username} attempting to delete event ${params.id}`)
+    
+    // First, check if there are any registrations for this event
+    const { data: registrations, error: regError } = await supabaseAdmin
+      .from('registrations')
+      .select('id, status')
+      .eq('event_id', params.id)
+    
+    if (regError) {
+      console.error('Error checking registrations:', regError)
+      return NextResponse.json({ error: 'Failed to check event registrations' }, { status: 500 })
+    }
+    
+    if (registrations && registrations.length > 0) {
+      console.log(`[Delete Event] Found ${registrations.length} registrations for event ${params.id}`)
+      
+      // Check if any registrations are paid
+      const paidRegistrations = registrations.filter(reg => reg.status === 'paid')
+      if (paidRegistrations.length > 0) {
+        return NextResponse.json({ 
+          error: 'Cannot delete event with paid registrations', 
+          details: `This event has ${paidRegistrations.length} paid registration(s). Please contact support to handle refunds before deletion.` 
+        }, { status: 400 })
+      }
+      
+      // Delete unpaid registrations first
+      const { error: deleteRegError } = await supabaseAdmin
+        .from('registrations')
+        .delete()
+        .eq('event_id', params.id)
+      
+      if (deleteRegError) {
+        console.error('Error deleting registrations:', deleteRegError)
+        return NextResponse.json({ error: 'Failed to delete event registrations' }, { status: 500 })
+      }
+      
+      console.log(`[Delete Event] Deleted ${registrations.length} unpaid registrations`)
+    }
+    
+    // Delete related payments
+    const { error: deletePaymentsError } = await supabaseAdmin
+      .from('payments')
+      .delete()
+      .eq('registration_id', 
+        supabaseAdmin
+          .from('registrations')
+          .select('id')
+          .eq('event_id', params.id)
+      )
+    
+    if (deletePaymentsError) {
+      console.error('Error deleting payments:', deletePaymentsError)
+      // Don't fail the deletion for payment cleanup errors
+    }
+    
+    // Now delete the event
+    const { error: deleteEventError } = await supabaseAdmin
       .from('events')
       .delete()
       .eq('id', params.id)
     
-    if (error) {
-      return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
+    if (deleteEventError) {
+      console.error('Error deleting event:', deleteEventError)
+      return NextResponse.json({ 
+        error: 'Failed to delete event', 
+        details: deleteEventError.message 
+      }, { status: 500 })
     }
+    
+    console.log(`[Delete Event] Successfully deleted event ${params.id}`)
     
     // Log admin action
     await supabaseAdmin
@@ -121,14 +183,24 @@ export async function DELETE(
         action: 'delete_event',
         resource_type: 'event',
         resource_id: params.id,
-        details: {},
+        details: { 
+          registrations_deleted: registrations?.length || 0,
+          had_paid_registrations: registrations?.some(reg => reg.status === 'paid') || false
+        },
         ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
         user_agent: request.headers.get('user-agent')
       })
     
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Event deleted successfully',
+      registrations_deleted: registrations?.length || 0
+    })
   } catch (error) {
     console.error('Error deleting event:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: String(error) 
+    }, { status: 500 })
   }
 }

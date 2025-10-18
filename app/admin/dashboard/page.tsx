@@ -157,12 +157,15 @@ export default function AdminDashboardPage() {
         }
       })
 
+      const data = await response.json()
+
       if (response.ok) {
         setEvents(events.filter(e => e.id !== eventId))
         // Refresh stats
         await fetchDashboardData(token)
+        alert(data.message || 'Event deleted successfully!')
       } else {
-        alert('Failed to delete event')
+        alert(data.details || data.error || 'Failed to delete event')
       }
     } catch (error) {
       alert('Network error')
