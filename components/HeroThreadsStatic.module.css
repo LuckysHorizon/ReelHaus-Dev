@@ -1,35 +1,29 @@
 .heroBackground {
   position: absolute;
   inset: 0;
-  height: 100%;
   width: 100%;
-  background-color: transparent; /* transparent background */
+  height: 100%;
+  background-color: transparent;
   overflow: hidden;
-  pointer-events: none; /* fully decorative */
-  z-index: 0; /* sit behind the foreground content */
-  /* Mask removed to avoid visible empty corners */
-  -webkit-mask-image: none;
-          mask-image: none;
+  pointer-events: none;
+  z-index: 0;
   will-change: transform;
 }
 
-/* marker class removed; we switch to data attribute on #threads-bg */
-
-/* Shared ribbon styles */
+/* Base ribbon styling */
 .ribbon {
   position: absolute;
-  width: 260%;
-  font-size: clamp(2.25rem, 6vw, 4rem);
+  width: 300%;
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 900;
   letter-spacing: -0.03em;
   white-space: nowrap;
-  opacity: 0.22; /* subtle backdrop */
+  opacity: 0.25;
   transform-origin: center;
   overflow: visible;
   backface-visibility: hidden;
 }
 
-/* inner wrapper scrolls; outer keeps rotation fixed */
 .inner {
   display: inline-block;
   padding-inline: 2rem;
@@ -38,116 +32,121 @@
   will-change: transform;
 }
 
-/* Alternating colors */
-.ribbonWhite {
-  background: transparent;
-  padding: 0.35em 0;
-}
-
+.ribbonWhite,
 .ribbonBlack {
   background: transparent;
   padding: 0.35em 0;
 }
 
-/* Layered positions & rotations */
+/* Centered horizontal layout — no diagonal tilt */
 .ribbon:nth-child(1) {
-  top: 8%;
-  left: -45%;
-  transform: rotate(-18deg);
+  top: 15%;
+  left: -100%;
+  transform: rotate(0deg);
   z-index: 1;
 }
 .ribbon:nth-child(1) .inner {
-  --marquee-duration: 48s;
+  --marquee-duration: 60s;
 }
 
 .ribbon:nth-child(2) {
-  top: 28%;
-  left: -40%;
-  transform: rotate(12deg);
+  top: 35%;
+  left: -100%;
+  transform: rotate(0deg);
   z-index: 2;
 }
 .ribbon:nth-child(2) .inner {
-  --marquee-duration: 36s;
+  --marquee-duration: 45s;
   animation-direction: reverse;
 }
 
 .ribbon:nth-child(3) {
-  top: 50%;
-  left: -38%;
-  transform: rotate(-28deg);
+  top: 55%;
+  left: -100%;
+  transform: rotate(0deg);
   z-index: 3;
 }
 .ribbon:nth-child(3) .inner {
-  --marquee-duration: 44s;
+  --marquee-duration: 55s;
 }
 
 .ribbon:nth-child(4) {
-  top: 70%;
-  left: -35%;
-  transform: rotate(9deg);
+  top: 75%;
+  left: -100%;
+  transform: rotate(0deg);
   z-index: 4;
 }
 .ribbon:nth-child(4) .inner {
-  --marquee-duration: 38s;
+  --marquee-duration: 50s;
   animation-direction: reverse;
 }
 
-.ribbon span {
-  display: inline-block;
+.ribbon:nth-child(5) {
+  top: 90%;
+  left: -100%;
+  transform: rotate(0deg);
+  z-index: 5;
+}
+.ribbon:nth-child(5) .inner {
+  --marquee-duration: 65s;
 }
 
-/* Alternating text styles */
+/* Token and text styling */
 .token {
   display: inline-flex;
-  gap: 0.6rem; /* fixed spacing ensures REELHAUS stays glued */
-  padding: 0 2rem; /* moved padding from span level to token */
+  gap: 0.6rem;
+  padding: 0 2rem;
   align-items: baseline;
 }
 
 .textWhite {
-  color: rgba(255,255,255,0.92);
-  text-shadow: 0 0 6px rgba(0,0,0,0.25);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
 }
 
-/* removed old alternating gradient style */
-
-/* Specific branding colors for split word */
 .textReel {
   background: linear-gradient(90deg, #ff4d6d, #e11d48);
   -webkit-background-clip: text;
-          background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 6px rgba(0,0,0,0.35);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
 }
 
-/* dot removed */
-
+/* Animation keyframes */
 @keyframes ribbon-marquee {
-  from { transform: translate3d(0,0,0); }
-  to { transform: translate3d(-50%,0,0); }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
 }
 
-/* note: rotation is already applied per nth-child rules above */
-
-/* Reduced motion: stop marquee */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .inner { animation: none; }
 }
 
-/* Mobile tweaks */
+/* Mobile responsive adjustments */
 @media (max-width: 640px) {
-  .heroBackground { -webkit-mask-image: none; mask-image: none; }
-  .ribbon { font-size: clamp(1.8rem, 10vw, 2.8rem); opacity: 0.26; width: 300%; }
-  .ribbon:nth-child(1) { top: 6%; left: -55%; transform: rotate(-14deg); }
-  .ribbon:nth-child(2) { top: 26%; left: -52%; transform: rotate(10deg); }
-  .ribbon:nth-child(3) { top: 48%; left: -50%; transform: rotate(-22deg); }
-  .ribbon:nth-child(4) { top: 70%; left: -48%; transform: rotate(8deg); }
-  /* Animate on all mobiles (slow for smoothness) */
-  :global(#threads-bg) .inner { animation-name: ribbon-marquee; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; transform: translateZ(0); }
-  .ribbon:nth-child(1) .inner { animation-duration: 72s !important; }
-  .ribbon:nth-child(2) .inner { animation-duration: 60s !important; }
-  .ribbon:nth-child(3) .inner { animation-duration: 66s !important; }
-  .ribbon:nth-child(4) .inner { animation-duration: 70s !important; }
+  .ribbon {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    opacity: 0.25;
+    width: 400%;
+  }
+
+  .ribbon:nth-child(1) { top: 20%; left: -120%; }
+  .ribbon:nth-child(2) { top: 40%; left: -120%; }
+  .ribbon:nth-child(3) { top: 60%; left: -120%; }
+  .ribbon:nth-child(4) { top: 80%; left: -120%; }
+  .ribbon:nth-child(5) { top: 95%; left: -120%; }
+
+  :global(#threads-bg) .inner {
+    animation-name: ribbon-marquee;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    transform: translateZ(0);
+  }
+
+  .ribbon:nth-child(1) .inner { animation-duration: 80s !important; }
+  .ribbon:nth-child(2) .inner { animation-duration: 70s !important; }
+  .ribbon:nth-child(3) .inner { animation-duration: 75s !important; }
+  .ribbon:nth-child(4) .inner { animation-duration: 85s !important; }
+  .ribbon:nth-child(5) .inner { animation-duration: 90s !important; }
 }
-
-
