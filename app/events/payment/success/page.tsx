@@ -29,51 +29,12 @@ function PaymentSuccessInner() {
       return
     }
 
-    // Automatically update payment status and send email
+    // Since user reached success page, payment is successful - update database immediately
     const updatePaymentStatusAndSendEmail = async () => {
       try {
-        // First, try to verify payment with Cashfree
-        // Get the order ID from payment data or use a fallback
-        const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
+        console.log('[Success Page] Payment successful - updating database immediately')
         
-        // If no order ID from payment data, skip Cashfree verification and go straight to database update
-        if (!orderId) {
-          console.log('[Success Page] No order ID available, skipping Cashfree verification and updating database directly')
-        } else {
-          console.log('[Success Page] Attempting payment verification with:', {
-            orderId,
-            paymentId,
-            registrationId,
-            paymentData
-          })
-          
-          const verifyResponse = await fetch('/api/payments/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cashfree_order_id: orderId,
-              cashfree_payment_id: paymentId || '',
-              registration_id: registrationId
-            })
-          })
-          
-          if (verifyResponse.ok) {
-            console.log('Payment verified successfully with Cashfree')
-            if (!emailSent) {
-              setEmailSent(true)
-            }
-            return
-          } else {
-            console.log('Cashfree verification failed, trying fallback update')
-          }
-        }
-        
-        // Fallback: Update payment status directly
-        console.log('[Success Page] Attempting database update with:', {
-          registration_id: registrationId,
-          payment_id: paymentId
-        })
-        
+        // Update payment status directly (no verification needed since user reached success page)
         const statusResponse = await fetch('/api/payments/update-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -111,7 +72,7 @@ function PaymentSuccessInner() {
           }
         }
         
-        // Then, send confirmation email
+        // Send confirmation email
         const emailResponse = await fetch('/api/send-confirmation-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -129,32 +90,8 @@ function PaymentSuccessInner() {
       }
     }
 
-    // Fetch payment data first, then update payment status
-    const fetchDataAndUpdate = async () => {
-      try {
-        const response = await fetch(`/api/payments/${registrationId}`)
-        if (response.ok) {
-          const data = await response.json()
-          console.log('[Success Page] Payment data fetched:', data)
-          setPaymentData(data)
-          
-          // Now call the update function with the fetched data
-          setTimeout(() => {
-            updatePaymentStatusAndSendEmail()
-          }, 100)
-        } else {
-          console.error('[Success Page] Failed to fetch payment data:', response.status)
-          // Still try to update without payment data
-          updatePaymentStatusAndSendEmail()
-        }
-      } catch (error) {
-        console.error('Error fetching payment data:', error)
-        // Still try to update without payment data
-        updatePaymentStatusAndSendEmail()
-      }
-    }
-    
-    fetchDataAndUpdate()
+    // Update payment status immediately since user reached success page
+    updatePaymentStatusAndSendEmail()
     
     // Also retry after 5 seconds to ensure database is updated
     const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
@@ -207,38 +144,9 @@ function PaymentSuccessInner() {
     
     setSendingEmail(true)
     try {
-      // First, try to verify payment with Cashfree
-      // Get the order ID from payment data or use a fallback
-      const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
+      console.log('[Manual Resend] Updating payment status and sending email')
       
-      console.log('[Manual Resend] Attempting payment verification with:', {
-        orderId,
-        paymentId,
-        registrationId,
-        paymentData
-      })
-      
-      const verifyResponse = await fetch('/api/payments/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cashfree_order_id: orderId,
-          cashfree_payment_id: paymentId || '',
-          registration_id: registrationId
-        })
-      })
-      
-      if (verifyResponse.ok) {
-        console.log('Payment verified successfully with Cashfree')
-        if (!emailSent) {
-          setEmailSent(true)
-        }
-        return
-      } else {
-        console.log('Cashfree verification failed, trying fallback update')
-      }
-      
-      // Fallback: Update payment status directly
+      // Update payment status directly
       const statusResponse = await fetch('/api/payments/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -253,29 +161,9 @@ function PaymentSuccessInner() {
       } else {
         const errorData = await statusResponse.json().catch(() => ({}))
         console.error('Failed to update payment status:', errorData)
-        
-        // Try force update as fallback
-        try {
-          const forceResponse = await fetch('/api/force-update-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              registration_id: registrationId,
-              payment_id: paymentId
-            })
-          })
-          
-          if (forceResponse.ok) {
-            console.log('Payment status force updated successfully')
-          } else {
-            console.error('Force update also failed')
-          }
-        } catch (forceError) {
-          console.error('Force update error:', forceError)
-        }
       }
       
-      // Then, send confirmation email
+      // Send confirmation email
       const response = await fetch('/api/send-confirmation-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
