@@ -101,7 +101,7 @@ export default function AdminEventsPage() {
     }
   }
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const errors: Record<string, string> = {}
     
     if (!formData.title.trim()) {
@@ -110,6 +110,39 @@ export default function AdminEventsPage() {
     
     if (formData.seats_total < 0) {
       errors.seats_total = 'Seats must be 0 or greater'
+    }
+    
+    // When editing an event, ensure new seats_total is not less than paid seats
+    if (editingEvent) {
+      try {
+        const token = getAdminToken()
+        if (token) {
+          // Get actual count of paid registrations for this event (get all without pagination)
+          const response = await fetch(`/api/admin/events/${editingEvent.id}/registrations?limit=1000`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            const paidSeats = data.registrations
+              .filter((reg: any) => reg.status === 'paid')
+              .reduce((sum: number, reg: any) => sum + reg.tickets, 0)
+            
+            if (formData.seats_total < paidSeats) {
+              errors.seats_total = `Cannot reduce seats below ${paidSeats} (currently paid seats)`
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching paid registrations:', error)
+        // Fallback to the old calculation if API fails
+        const filledSeats = editingEvent.seats_total - editingEvent.seats_available
+        if (formData.seats_total < filledSeats) {
+          errors.seats_total = `Cannot reduce seats below ${filledSeats} (currently filled seats)`
+        }
+      }
     }
     
     if (formData.price_cents < 0) {
@@ -130,7 +163,7 @@ export default function AdminEventsPage() {
     setFormErrors({})
 
     // Validate form
-    if (!validateForm()) {
+    if (!(await validateForm())) {
       setError('Please fix the form errors below')
       setSaving(false)
       return
@@ -144,21 +177,54 @@ export default function AdminEventsPage() {
       const method = editingEvent ? 'PUT' : 'POST'
       
       // For new events, set seats_available = seats_total
-      const submitData = editingEvent 
-        ? {
-            ...formData,
-            seats_total: Number(formData.seats_total),
-            seats_available: Number(formData.seats_available),
-            price_cents: Number(formData.price_cents),
-            is_active: Boolean(formData.is_active)
+      // For existing events, recalculate seats_available based on actual paid registrations
+      let submitData
+      
+      if (editingEvent) {
+        const newSeatsTotal = Number(formData.seats_total)
+        let paidSeats = 0
+        
+        try {
+          // Get actual count of paid registrations (get all without pagination)
+          const response = await fetch(`/api/admin/events/${editingEvent.id}/registrations?limit=1000`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            paidSeats = data.registrations
+              .filter((reg: any) => reg.status === 'paid')
+              .reduce((sum: number, reg: any) => sum + reg.tickets, 0)
+          } else {
+            // Fallback to old calculation if API fails
+            paidSeats = editingEvent.seats_total - editingEvent.seats_available
           }
-        : { 
-            ...formData, 
-            seats_available: Number(formData.seats_total),
-            seats_total: Number(formData.seats_total),
-            price_cents: Number(formData.price_cents),
-            is_active: Boolean(formData.is_active)
-          }
+        } catch (error) {
+          console.error('Error fetching paid registrations:', error)
+          // Fallback to old calculation
+          paidSeats = editingEvent.seats_total - editingEvent.seats_available
+        }
+        
+        const newSeatsAvailable = Math.max(0, newSeatsTotal - paidSeats)
+        
+        submitData = {
+          ...formData,
+          seats_total: newSeatsTotal,
+          seats_available: newSeatsAvailable,
+          price_cents: Number(formData.price_cents),
+          is_active: Boolean(formData.is_active)
+        }
+      } else {
+        submitData = { 
+          ...formData, 
+          seats_available: Number(formData.seats_total),
+          seats_total: Number(formData.seats_total),
+          price_cents: Number(formData.price_cents),
+          is_active: Boolean(formData.is_active)
+        }
+      }
       
       console.log('Sending data:', JSON.stringify(submitData, null, 2))
       console.log('Data types:', Object.entries(submitData).map(([key, value]) => `${key}: ${typeof value} (${value})`))

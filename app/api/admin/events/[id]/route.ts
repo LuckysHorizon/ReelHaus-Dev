@@ -19,7 +19,7 @@ const eventUpdateSchema = z.object({
 // GET /api/admin/events/[id] - Get single event
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = verifyAdminToken(request)
@@ -27,10 +27,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    const { id } = await params
+    
     const { data: event, error } = await supabaseAdmin
       .from('events')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
     
     if (error) {
@@ -47,7 +49,7 @@ export async function GET(
 // PUT /api/admin/events/[id] - Update event
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = verifyAdminToken(request)
@@ -55,13 +57,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    const { id } = await params
     const body = await request.json()
     const validatedData = eventUpdateSchema.parse(body)
     
     const { data: event, error } = await supabaseAdmin
       .from('events')
       .update(validatedData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
     
@@ -76,7 +79,7 @@ export async function PUT(
         admin_id: admin.username,
         action: 'update_event',
         resource_type: 'event',
-        resource_id: params.id,
+        resource_id: id,
         details: { updates: validatedData },
         ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
         user_agent: request.headers.get('user-agent')
@@ -96,7 +99,7 @@ export async function PUT(
 // DELETE /api/admin/events/[id] - Delete event
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = verifyAdminToken(request)
@@ -104,13 +107,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    console.log(`[Delete Event] Admin ${admin.username} attempting to delete event ${params.id}`)
+    const { id } = await params
+    
+    console.log(`[Delete Event] Admin ${admin.username} attempting to delete event ${id}`)
     
     // First, check if there are any registrations for this event
     const { data: registrations, error: regError } = await supabaseAdmin
       .from('registrations')
       .select('id, status')
-      .eq('event_id', params.id)
+      .eq('event_id', id)
     
     if (regError) {
       console.error('Error checking registrations:', regError)
@@ -118,7 +123,7 @@ export async function DELETE(
     }
     
     if (registrations && registrations.length > 0) {
-      console.log(`[Delete Event] Found ${registrations.length} registrations for event ${params.id}`)
+      console.log(`[Delete Event] Found ${registrations.length} registrations for event ${id}`)
       
       // Check if any registrations are paid
       const paidRegistrations = registrations.filter(reg => reg.status === 'paid')
@@ -142,7 +147,7 @@ export async function DELETE(
       const { error: deleteRegError } = await supabaseAdmin
         .from('registrations')
         .delete()
-        .eq('event_id', params.id)
+        .eq('event_id', id)
       
       if (deleteRegError) {
         console.error('Error deleting registrations:', deleteRegError)
@@ -160,7 +165,7 @@ export async function DELETE(
         supabaseAdmin
           .from('registrations')
           .select('id')
-          .eq('event_id', params.id)
+          .eq('event_id', id)
       )
     
     if (deletePaymentsError) {
@@ -172,7 +177,7 @@ export async function DELETE(
     const { error: deleteExportsError } = await supabaseAdmin
       .from('exports')
       .delete()
-      .eq('event_id', params.id)
+      .eq('event_id', id)
     
     if (deleteExportsError) {
       console.error('Error deleting exports:', deleteExportsError)
@@ -185,7 +190,7 @@ export async function DELETE(
     const { error: deleteEventError } = await supabaseAdmin
       .from('events')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
     
     if (deleteEventError) {
       console.error('Error deleting event:', deleteEventError)
@@ -195,7 +200,7 @@ export async function DELETE(
       }, { status: 500 })
     }
     
-    console.log(`[Delete Event] Successfully deleted event ${params.id}`)
+    console.log(`[Delete Event] Successfully deleted event ${id}`)
     
     // Log admin action
     await supabaseAdmin
@@ -204,7 +209,7 @@ export async function DELETE(
         admin_id: admin.username,
         action: 'delete_event',
         resource_type: 'event',
-        resource_id: params.id,
+        resource_id: id,
         details: { 
           registrations_deleted: registrations?.length || 0,
           had_paid_registrations: registrations?.some(reg => reg.status === 'paid') || false

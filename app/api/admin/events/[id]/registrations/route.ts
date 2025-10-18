@@ -5,13 +5,15 @@ import { verifyAdminToken } from '@/lib/admin-auth'
 // GET /api/admin/events/[id]/registrations - Get event registrations
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = verifyAdminToken(request)
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    
+    const { id } = await params
     
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -25,7 +27,7 @@ export async function GET(
         *,
         payments(*)
       `)
-      .eq('event_id', params.id)
+      .eq('event_id', id)
       .order('created_at', { ascending: false })
     
     if (status) {
@@ -43,7 +45,7 @@ export async function GET(
     let countQuery = supabaseAdmin
       .from('registrations')
       .select('*', { count: 'exact', head: true })
-      .eq('event_id', params.id)
+      .eq('event_id', id)
     
     if (status) {
       countQuery = countQuery.eq('status', status)
