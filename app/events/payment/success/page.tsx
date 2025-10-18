@@ -21,7 +21,15 @@ function PaymentSuccessInner() {
   
 
   useEffect(() => {
-    if (!paymentId || !registrationId) {
+    console.log('Success page loaded with params:', {
+      paymentId,
+      registrationId,
+      status,
+      pendingVerification
+    })
+    
+    if (!registrationId) {
+      console.error('No registration ID found in URL parameters')
       setLoading(false)
       return
     }
@@ -137,7 +145,7 @@ function PaymentSuccessInner() {
               <p className="text-lg text-green-400 font-semibold mb-2">Please check your email for details.</p>
             )}
             <p className="text-gray-400">
-              Payment ID: {paymentId}
+              {paymentId ? `Payment ID: ${paymentId}` : 'Payment completed successfully'}
             </p>
           </div>
 
