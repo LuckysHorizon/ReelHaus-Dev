@@ -21,7 +21,7 @@ export default function Page() {
     mainEntity: {
       "@type": "Service",
       name: "Event Registration Service",
-      description: "Secure event registration with Razorpay payments and email confirmations",
+      description: "Secure event registration with Cashfree payments and email confirmations",
       offers: [
         {
           "@type": "Offer",

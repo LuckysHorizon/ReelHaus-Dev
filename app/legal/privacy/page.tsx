@@ -33,7 +33,7 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <span className="text-white">Transaction Data:</span> Details related to event or conference registrations, payment
-                  reference numbers, and Razorpay order IDs for verification.
+                  reference numbers, and Cashfree order IDs for verification.
                 </li>
                 <li>
                   <span className="text-white">Technical Data:</span> Browser type, device information, IP address, and limited analytics
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-semibold text-white">3. Data Sharing & Security</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-300">
                 <li>We do not sell, rent, or trade your personal data with third parties.</li>
-                <li>Payment information (such as card or UPI details) is not stored by ReelHaus. All payment processing is securely handled by Razorpay, a PCI DSS–compliant payment gateway.</li>
+                <li>Payment information (such as card or UPI details) is not stored by ReelHaus. All payment processing is securely handled by Cashfree, a PCI DSS–compliant payment gateway.</li>
                 <li>All communication between your browser and our platform is encrypted using HTTPS / TLS 1.2+ protocols.</li>
                 <li>Data is stored securely in Supabase-managed databases with strict access controls and authentication policies.</li>
               </ul>

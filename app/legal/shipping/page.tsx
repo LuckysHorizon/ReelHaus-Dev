@@ -26,7 +26,7 @@ export default function ShippingPage() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold text-white">1. Digital Ticket Delivery</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-300">
-                <li>Once your payment is successfully processed through our secure payment gateway (Razorpay or equivalent), a confirmation email containing your digital event ticket and QR code is automatically generated and sent to your registered email address.</li>
+                <li>Once your payment is successfully processed through our secure payment gateway (Cashfree), a confirmation email containing your digital event ticket and QR code is automatically generated and sent to your registered email address.</li>
               </ul>
             </section>
 

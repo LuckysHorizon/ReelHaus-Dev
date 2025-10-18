@@ -27,7 +27,7 @@ export default function RefundsPage() {
               <h2 className="text-2xl font-semibold text-white">1. Event Cancellations</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-300">
                 <li>If an event, workshop, or conference is cancelled by ReelHaus or the respective organizing club, all registered participants will receive a full refund of the registration fee.</li>
-                <li>Refunds will be processed within 7–10 working days through Razorpay, directly to the original payment method used.</li>
+                <li>Refunds will be processed within 7–10 working days through Cashfree, directly to the original payment method used.</li>
                 <li>No administrative or processing fee will be deducted for organizer-initiated cancellations.</li>
               </ul>
             </section>
@@ -49,9 +49,9 @@ export default function RefundsPage() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold text-white">3. Refund Process</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-300">
-                <li>All approved refunds will be processed only through Razorpay, using the same payment reference ID used during registration.</li>
+                <li>All approved refunds will be processed only through Cashfree, using the same payment reference ID used during registration.</li>
                 <li>Refunds cannot be redirected to any other account or payment method.</li>
-                <li>Users will receive an email confirmation once the refund is initiated, followed by a Razorpay notification when the transaction is completed.</li>
+                <li>Users will receive an email confirmation once the refund is initiated, followed by a Cashfree notification when the transaction is completed.</li>
               </ul>
             </section>
 

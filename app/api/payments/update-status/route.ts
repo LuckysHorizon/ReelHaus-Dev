@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
     
     const { registration_id, payment_id } = validatedData
     
+    console.log('[Update Status API] Received request:', {
+      registration_id,
+      payment_id
+    })
+    
     // Check if registration is already paid
     const { data: existingRegistration, error: regCheckError } = await supabaseAdmin
       .from('registrations')
@@ -22,13 +27,17 @@ export async function POST(request: NextRequest) {
       .single()
     
     if (regCheckError) {
+      console.log('[Update Status API] Registration check error:', regCheckError)
       return NextResponse.json({ 
         success: false, 
         error: 'Registration not found' 
       }, { status: 404 })
     }
     
+    console.log('[Update Status API] Current registration status:', existingRegistration.status)
+    
     if (existingRegistration.status === 'paid') {
+      console.log('[Update Status API] Registration already paid, skipping update')
       return NextResponse.json({
         success: true,
         message: 'Registration is already paid',
@@ -46,13 +55,22 @@ export async function POST(request: NextRequest) {
       .single()
     
     if (paymentError || !paymentRecord) {
+      console.log('[Update Status API] Payment record error:', paymentError)
       return NextResponse.json({ 
         success: false, 
         error: 'Payment record not found' 
       }, { status: 404 })
     }
     
+    console.log('[Update Status API] Found payment record:', {
+      id: paymentRecord.id,
+      status: paymentRecord.status,
+      provider_order_id: paymentRecord.provider_order_id
+    })
+    
     // Update payment status to succeeded
+    console.log('[Update Status API] Updating payment status to succeeded...')
+    
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')
       .update({
@@ -62,6 +80,7 @@ export async function POST(request: NextRequest) {
       .eq('id', paymentRecord.id)
     
     if (updatePaymentError) {
+      console.log('[Update Status API] Payment update error:', updatePaymentError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update payment status',
@@ -69,19 +88,26 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
     
+    console.log('[Update Status API] Payment status updated successfully')
+    
     // Update registration status to paid
+    console.log('[Update Status API] Updating registration status to paid...')
+    
     const { error: updateRegError } = await supabaseAdmin
       .from('registrations')
       .update({ status: 'paid' })
       .eq('id', registration_id)
     
     if (updateRegError) {
+      console.log('[Update Status API] Registration update error:', updateRegError)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to update registration status',
         details: String(updateRegError)
       }, { status: 500 })
     }
+    
+    console.log('[Update Status API] Registration status updated successfully')
     
     // Atomically decrement event seats
     const { data: registration, error: regError } = await supabaseAdmin

@@ -41,7 +41,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold text-white">2. Event Registrations and Payments</h2>
               <ul className="list-disc list-inside space-y-2 text-neutral-300">
-                <li>Event registrations and payments are processed through secure, RBI-compliant payment gateways (Razorpay).</li>
+                <li>Event registrations and payments are processed through secure, RBI-compliant payment gateways (Cashfree).</li>
                 <li>Upon successful payment, a confirmation email and a QR-coded digital pass will be sent to your registered email ID.</li>
                 <li>ReelHaus does not store or have access to your card, UPI, or banking details. All transactions are securely handled by the respective payment processor.</li>
                 <li>Registration fees, where applicable, are non-refundable unless an event, workshop, or conference is cancelled or rescheduled by the organizers.</li>

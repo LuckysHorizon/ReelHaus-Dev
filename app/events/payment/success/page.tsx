@@ -69,6 +69,11 @@ function PaymentSuccessInner() {
         }
         
         // Fallback: Update payment status directly
+        console.log('[Success Page] Attempting database update with:', {
+          registration_id: registrationId,
+          payment_id: paymentId
+        })
+        
         const statusResponse = await fetch('/api/payments/update-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -79,7 +84,8 @@ function PaymentSuccessInner() {
         })
         
         if (statusResponse.ok) {
-          console.log('Payment status updated successfully')
+          const responseData = await statusResponse.json()
+          console.log('Payment status updated successfully:', responseData)
         } else {
           const errorData = await statusResponse.json().catch(() => ({}))
           console.error('Failed to update payment status:', errorData)
