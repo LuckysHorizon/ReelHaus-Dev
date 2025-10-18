@@ -36,6 +36,32 @@ function PaymentSuccessInner() {
       return
     }
 
+    // Automatically send email when success page loads (if not already sent)
+    const sendEmailOnSuccess = async () => {
+      if (!emailSent && !sendingEmail) {
+        console.log('Success page loaded - attempting to send confirmation email automatically')
+        try {
+          const response = await fetch('/api/test-webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ registration_id: registrationId })
+          })
+          
+          if (response.ok) {
+            setEmailSent(true)
+            console.log('Confirmation email sent automatically on success page load')
+          } else {
+            console.log('Automatic email sending failed, user can use manual button')
+          }
+        } catch (error) {
+          console.error('Error sending automatic email:', error)
+        }
+      }
+    }
+
+    // Send email automatically after a short delay to ensure page is loaded
+    const emailTimer = setTimeout(sendEmailOnSuccess, 1000)
+
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
       try {
@@ -79,7 +105,12 @@ function PaymentSuccessInner() {
     }
 
     fetchRegistrationData()
-  }, [paymentId, registrationId])
+
+    // Cleanup timer
+    return () => {
+      clearTimeout(emailTimer)
+    }
+  }, [paymentId, registrationId, emailSent, sendingEmail])
 
   const sendEmailManually = async () => {
     if (!registrationId || sendingEmail) return

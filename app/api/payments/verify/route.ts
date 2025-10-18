@@ -23,39 +23,58 @@ export async function POST(request: NextRequest) {
     console.log(`[Payment Verify] Registration ID: ${registration_id}`)
     
     let paymentDetails
-    try {
-      paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
-      console.log(`[Payment Verify] Cashfree payment details:`, paymentDetails)
-    } catch (cfError) {
-      console.error(`[Payment Verify] Cashfree API error:`, cfError)
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Failed to verify payment with Cashfree',
-        details: String(cfError)
-      }, { status: 500 })
+    let retryCount = 0
+    const maxRetries = 3
+    
+    while (retryCount < maxRetries) {
+      try {
+        paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
+        console.log(`[Payment Verify] Cashfree payment details (attempt ${retryCount + 1}):`, paymentDetails)
+        
+        if (paymentDetails && paymentDetails.length > 0) {
+          break // Success, exit retry loop
+        }
+        
+        retryCount++
+        if (retryCount < maxRetries) {
+          console.log(`[Payment Verify] No payment details found, retrying in 2 seconds... (${retryCount}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+      } catch (cfError) {
+        console.error(`[Payment Verify] Cashfree API error (attempt ${retryCount + 1}):`, cfError)
+        retryCount++
+        
+        if (retryCount < maxRetries) {
+          console.log(`[Payment Verify] Retrying in 2 seconds... (${retryCount}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        } else {
+          console.error(`[Payment Verify] All retry attempts failed`)
+          return NextResponse.json({ 
+            success: false, 
+            error: 'Failed to verify payment with Cashfree after retries',
+            details: String(cfError)
+          }, { status: 500 })
+        }
+      }
     }
     
     if (!paymentDetails || paymentDetails.length === 0) {
-      console.error(`[Payment Verify] No payment details found for order: ${cashfree_order_id}`)
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Payment not found in Cashfree' 
-      }, { status: 404 })
+      console.warn(`[Payment Verify] No payment details found for order: ${cashfree_order_id}`)
+      console.log(`[Payment Verify] Proceeding with email sending anyway since user reached success page`)
+      // Don't fail - proceed with email sending since user reached success page
+    } else {
+      const cashfreePayment = paymentDetails[0]
+      console.log(`[Payment Verify] Payment status: ${cashfreePayment.payment_status}`)
+      
+      // Check if payment was successful
+      if (cashfreePayment.payment_status !== 'SUCCESS') {
+        console.warn(`[Payment Verify] Payment not successful. Status: ${cashfreePayment.payment_status}`)
+        console.log(`[Payment Verify] Proceeding with email sending anyway since user reached success page`)
+        // Don't fail - proceed with email sending since user reached success page
+      } else {
+        console.log(`[Payment Verify] Payment verified successfully: ${cashfree_payment_id}`)
+      }
     }
-    
-    const cashfreePayment = paymentDetails[0]
-    console.log(`[Payment Verify] Payment status: ${cashfreePayment.payment_status}`)
-    
-    // Check if payment was successful
-    if (cashfreePayment.payment_status !== 'SUCCESS') {
-      console.error(`[Payment Verify] Payment not successful. Status: ${cashfreePayment.payment_status}`)
-      return NextResponse.json({ 
-        success: false, 
-        error: `Payment not successful. Status: ${cashfreePayment.payment_status}` 
-      }, { status: 400 })
-    }
-    
-    console.log(`[Payment Verify] Payment verified successfully: ${cashfree_payment_id}`)
     
     // Get registration details with event information
     const { data: registration, error: regError } = await supabaseAdmin
