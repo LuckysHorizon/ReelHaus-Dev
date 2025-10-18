@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendEmailsToAllAttendees } from '@/lib/resend'
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +73,49 @@ export async function POST(request: NextRequest) {
     
     if (decrementError) {
       console.error(`[Test Webhook] Failed to decrement seats:`, decrementError)
+    }
+    
+    // Send confirmation emails to all attendees
+    if (process.env.RESEND_API_KEY) {
+      console.log(`[Test Webhook] Sending confirmation emails...`)
+      const eventData = registration.events
+      const eventDate = new Date(eventData.start_datetime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      const eventTime = `${new Date(eventData.start_datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })} - ${new Date(eventData.end_datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })}`
+
+      // Send emails to all attendees
+      try {
+        await sendEmailsToAllAttendees({
+          mainRegistrant: {
+            email: registration.email,
+            name: registration.name || 'Attendee',
+            roll_no: registration.roll_no || 'N/A',
+          },
+          ticketDetails: registration.ticket_details || [],
+          eventName: eventData.title,
+          eventDate,
+          eventTime,
+          eventLocation: 'TBD', // Add venue field to events table if needed
+          paymentId: 'TEST_' + registration_id,
+        })
+        console.log(`[Test Webhook] Confirmation emails sent successfully`)
+      } catch (emailError) {
+        console.error(`[Test Webhook] Email sending failed:`, emailError)
+      }
+    } else {
+      console.warn(`[Test Webhook] RESEND_API_KEY not configured - skipping email confirmation`)
     }
     
     console.log(`[Test Webhook] Successfully processed registration: ${registration_id}`)

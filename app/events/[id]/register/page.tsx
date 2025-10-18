@@ -271,11 +271,25 @@ export default function EventRegistrationPage() {
                 console.log('Payment verification response:', verifyJson)
                 
                 if (verifyResponse.ok && verifyJson?.success) {
+                  console.log('Payment verification successful - emails sent')
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}`)
                 } else {
                   console.error('Payment verification failed:', verifyJson)
-                  // Still redirect to success page - webhook will handle verification
-                  console.log('Redirecting to success page anyway - webhook will verify payment')
+                  // Try to send email manually as fallback
+                  console.log('Attempting to send email manually as fallback...')
+                  try {
+                    const emailResponse = await fetch('/api/test-webhook', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ registration_id: data.registration_id })
+                    })
+                    if (emailResponse.ok) {
+                      console.log('Fallback email sent successfully')
+                    }
+                  } catch (emailError) {
+                    console.error('Fallback email failed:', emailError)
+                  }
+                  // Still redirect to success page
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}&pending_verification=true`)
                 }
               } catch (verifyError) {

@@ -18,6 +18,8 @@ function PaymentSuccessInner() {
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
+  const [emailSent, setEmailSent] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
   
 
   useEffect(() => {
@@ -78,6 +80,31 @@ function PaymentSuccessInner() {
 
     fetchRegistrationData()
   }, [paymentId, registrationId])
+
+  const sendEmailManually = async () => {
+    if (!registrationId || sendingEmail) return
+    
+    setSendingEmail(true)
+    try {
+      console.log('Sending email manually for registration:', registrationId)
+      const response = await fetch('/api/test-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registration_id: registrationId })
+      })
+      
+      if (response.ok) {
+        setEmailSent(true)
+        console.log('Email sent successfully')
+      } else {
+        console.error('Failed to send email')
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+    } finally {
+      setSendingEmail(false)
+    }
+  }
 
   
 
@@ -234,9 +261,21 @@ function PaymentSuccessInner() {
                   <Mail className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Email Confirmation</h3>
-                <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                <p className="text-sm text-gray-400 max-w-xs mx-auto mb-3">
                   A confirmation email with your ticket details has been sent to {registrationData?.email || 'your registered email'}
                 </p>
+                {!emailSent && (
+                  <button
+                    onClick={sendEmailManually}
+                    disabled={sendingEmail}
+                    className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-full border border-red-500/30 transition-colors disabled:opacity-50"
+                  >
+                    {sendingEmail ? 'Sending...' : 'Resend Email'}
+                  </button>
+                )}
+                {emailSent && (
+                  <p className="text-xs text-green-400">✓ Email sent successfully!</p>
+                )}
               </div>
               <div className="text-center px-2">
                 <div className="bg-red-500/15 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">

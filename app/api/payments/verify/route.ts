@@ -165,24 +165,25 @@ export async function POST(request: NextRequest) {
       })}`
 
       // Send emails to all attendees
-      sendEmailsToAllAttendees({
-        mainRegistrant: {
-          email: registration.email,
-          name: registration.name || 'Attendee',
-          roll_no: registration.roll_no || 'N/A',
-        },
-        ticketDetails: registration.ticket_details || [],
-        eventName: event.title,
-        eventDate,
-        eventTime,
-        eventLocation: 'TBD', // Add venue field to events table if needed
-        paymentId: cashfree_payment_id,
-      }).then(() => {
+      try {
+        await sendEmailsToAllAttendees({
+          mainRegistrant: {
+            email: registration.email,
+            name: registration.name || 'Attendee',
+            roll_no: registration.roll_no || 'N/A',
+          },
+          ticketDetails: registration.ticket_details || [],
+          eventName: event.title,
+          eventDate,
+          eventTime,
+          eventLocation: 'TBD', // Add venue field to events table if needed
+          paymentId: cashfree_payment_id,
+        })
         console.log(`[Payment Verify] Confirmation emails sent successfully`)
-      }).catch((emailError) => {
+      } catch (emailError) {
         console.error('Email sending failed for payment verification:', emailError)
         // Don't fail the payment verification if email fails
-      })
+      }
     } else {
       console.warn('RESEND_API_KEY not configured - skipping email confirmation')
     }
