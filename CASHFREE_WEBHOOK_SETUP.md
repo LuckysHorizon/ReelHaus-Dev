@@ -10,12 +10,11 @@ CASHFREE_APP_ID=your_app_id_here
 CASHFREE_SECRET_KEY=your_secret_key_here
 CASHFREE_ENVIRONMENT=production  # or sandbox for testing
 
-# Cashfree Webhook Configuration
-CASHFREE_WEBHOOK_SECRET=your_webhook_secret_here  # This is different from SECRET_KEY
-
 # Email Configuration
 RESEND_API_KEY=your_resend_api_key_here
 ```
+
+**Note**: Cashfree webhooks use the same `CASHFREE_SECRET_KEY` for signature verification (not a separate webhook secret).
 
 ## Webhook Configuration in Cashfree Dashboard
 
@@ -33,7 +32,7 @@ RESEND_API_KEY=your_resend_api_key_here
      - ✅ `success payment`
      - ✅ `user dropped payment`
 
-3. **Copy the Webhook Secret** from the dashboard and set it as `CASHFREE_WEBHOOK_SECRET`
+3. **Use your existing `CASHFREE_SECRET_KEY`** for webhook signature verification
 
 ## Testing the Webhook
 
@@ -56,13 +55,13 @@ curl -X POST https://yourdomain.com/api/test-webhook-cashfree \
 
 ### Webhook Not Receiving Calls
 - ✅ Ensure webhook URL is publicly accessible (HTTPS)
-- ✅ Check webhook secret is correctly set
+- ✅ Check CASHFREE_SECRET_KEY is correctly set
 - ✅ Verify webhook events are subscribed in dashboard
 - ✅ Check server logs for signature verification errors
 
 ### Database Not Updating
-- ✅ Check webhook signature verification
-- ✅ Verify webhook secret matches dashboard
+- ✅ Check webhook signature verification (uses timestamp + rawBody)
+- ✅ Verify CASHFREE_SECRET_KEY matches your API credentials
 - ✅ Check database connection and permissions
 - ✅ Review webhook event structure
 
@@ -82,8 +81,19 @@ curl -X POST https://yourdomain.com/api/test-webhook-cashfree \
 
 ## Key Fixes Applied
 
-1. **Fixed webhook signature verification** - Now uses proper webhook secret
+1. **Fixed webhook signature verification** - Now uses `timestamp + rawBody` with `CASHFREE_SECRET_KEY`
 2. **Added raw body handling** - Required for signature verification
-3. **Simplified success page** - Relies on webhook for database updates
-4. **Added comprehensive logging** - For debugging webhook issues
-5. **Created test endpoint** - For testing webhook logic without real payments
+3. **Updated payload parsing** - Handles exact Cashfree webhook structure
+4. **Simplified success page** - Relies on webhook for database updates
+5. **Added comprehensive logging** - For debugging webhook issues
+6. **Created test endpoint** - For testing webhook logic without real payments
+
+## Signature Verification Formula
+
+```javascript
+// Cashfree signature verification
+const expectedSignature = crypto
+  .createHmac('sha256', CASHFREE_SECRET_KEY)
+  .update(timestamp + rawBody)
+  .digest('base64')
+```

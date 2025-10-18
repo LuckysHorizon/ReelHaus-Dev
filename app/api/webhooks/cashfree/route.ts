@@ -34,60 +34,55 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
     }
     
-    // Verify webhook signature using webhook secret (not API secret)
-    const webhookSecret = process.env.CASHFREE_WEBHOOK_SECRET || process.env.CASHFREE_SECRET_KEY
-    if (!webhookSecret) {
-      console.error('Missing CASHFREE_WEBHOOK_SECRET environment variable')
-      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
+    // Get timestamp for signature verification
+    const timestamp = request.headers.get('x-webhook-timestamp')
+    
+    // Verify webhook signature using CASHFREE_SECRET_KEY with timestamp + rawBody
+    const secretKey = process.env.CASHFREE_SECRET_KEY
+    if (!secretKey) {
+      console.error('Missing CASHFREE_SECRET_KEY environment variable')
+      return NextResponse.json({ error: 'Secret key not configured' }, { status: 500 })
     }
     
+    // Cashfree signature: HMAC_SHA256(timestamp + rawBody, CASHFREE_SECRET_KEY)
     const expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(body)
+      .createHmac('sha256', secretKey)
+      .update(timestamp + body)
       .digest('base64')
     
     if (signature !== expectedSignature) {
       console.error('Invalid Cashfree webhook signature')
       console.error('Expected:', expectedSignature)
       console.error('Received:', signature)
+      console.error('Timestamp:', timestamp)
+      console.error('Body length:', body.length)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
+    console.log('✅ Cashfree webhook signature verified successfully')
+    
     const event = JSON.parse(body)
-    const rawType: string | undefined = event.type || event.event || event?.data?.event
-    const eventType = (rawType || '').toString().trim().toLowerCase()
-    const orderId = event.data?.order?.order_id || event.data?.order_id
+    const eventType = event.type
+    const orderId = event.data?.order?.order_id
+    const paymentId = event.data?.payment?.cf_payment_id
+    const paymentStatus = event.data?.payment?.payment_status
     
     console.log('[Cashfree Webhook] Event type:', eventType)
     console.log('[Cashfree Webhook] Order ID:', orderId)
+    console.log('[Cashfree Webhook] Payment ID:', paymentId)
+    console.log('[Cashfree Webhook] Payment Status:', paymentStatus)
     console.log('[Cashfree Webhook] Event data:', JSON.stringify(event, null, 2))
     
     // Handle different event types
     switch (eventType) {
-      case 'payment_success_webhook':
-      case 'order_paid':
-      case 'success payment':
-      case 'success_payment':
-      case 'success payment tdr':
       case 'PAYMENT_SUCCESS_WEBHOOK':
+        return await handlePaymentSuccess(event)
+      case 'PAYMENT_FAILED_WEBHOOK':
+        return await handlePaymentFailed(event)
+      case 'PAYMENT_USER_DROPPED':
+        return await handleUserDropped(event)
       case 'ORDER_PAID':
         return await handlePaymentSuccess(event)
-      case 'payment_failed_webhook':
-      case 'failed payment':
-      case 'failed_payment':
-      case 'abandoned checkout':
-        return await handlePaymentFailed(event)
-      case 'payment_user_dropped':
-      case 'user dropped payment':
-      case 'abandoned_checkout':
-        return await handleUserDropped(event)
-      case 'dispute created':
-      case 'dispute updated':
-      case 'dispute closed':
-        return NextResponse.json({ status: 'success' })
-      case 'refund':
-      case 'auto refund':
-        return NextResponse.json({ status: 'success' })
       default:
         console.log(`Unhandled Cashfree event type: ${eventType}`)
         return NextResponse.json({ status: 'ignored', message: `Event type ${eventType} not handled` })
@@ -104,17 +99,25 @@ export async function POST(request: NextRequest) {
  */
 async function handlePaymentSuccess(event: any) {
   try {
-    const payment = event.data.payment || event.data
-    const orderId = payment.order_id
+    const payment = event.data.payment
+    const order = event.data.order
+    const customer = event.data.customer_details
+    const orderId = order.order_id
+    const paymentId = payment.cf_payment_id
+    
+    console.log('💰 Processing payment success for order:', orderId)
+    console.log('👤 Customer:', customer.customer_name, customer.customer_email)
+    console.log('💳 Payment ID:', paymentId)
     
     // Check if payment already processed (idempotency)
     const { data: existingPayment, error: checkError } = await supabaseAdmin
       .from('payments')
       .select('*')
-      .eq('provider_payment_id', payment.cf_payment_id)
+      .eq('provider_payment_id', paymentId)
       .single()
     
     if (existingPayment && existingPayment.status === 'succeeded') {
+      console.log('Payment already processed, skipping')
       return NextResponse.json({ status: 'already_processed' })
     }
     
@@ -147,7 +150,7 @@ async function handlePaymentSuccess(event: any) {
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')
       .update({
-        provider_payment_id: payment.cf_payment_id,
+        provider_payment_id: paymentId,
         status: 'succeeded',
         raw_event: event
       })
@@ -209,7 +212,7 @@ async function handlePaymentSuccess(event: any) {
         eventDate,
         eventTime,
         eventLocation: 'TBD', // Add venue field to events table if needed
-        paymentId: payment.cf_payment_id,
+        paymentId: paymentId,
       }).catch((emailError) => {
         // Log error but don't fail the webhook
         console.error('Webhook email sending failed:', emailError)
@@ -231,8 +234,9 @@ async function handlePaymentSuccess(event: any) {
  */
 async function handlePaymentFailed(event: any) {
   try {
-    const payment = event.data.payment || event.data
-    const orderId = payment.order_id
+    const payment = event.data.payment
+    const order = event.data.order
+    const orderId = order.order_id
     
     // Update payment status to failed
     const { error: updateError } = await supabaseAdmin
@@ -272,8 +276,8 @@ async function handlePaymentFailed(event: any) {
  */
 async function handleUserDropped(event: any) {
   try {
-    const payment = event.data.payment || event.data
-    const orderId = payment.order_id
+    const order = event.data.order
+    const orderId = order.order_id
     
     console.log(`User dropped payment for order ${orderId}`)
     
