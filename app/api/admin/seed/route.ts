@@ -5,7 +5,8 @@ import { seedSampleEvents, seedSampleRegistrations } from '@/lib/seed-data'
 // POST /api/admin/seed - Seed sample data
 export const POST = withAdminAuth(async (request: NextRequest, admin) => {
   try {
-    const { type } = await request.json()
+    const body = await request.json()
+    const { type, eventId } = body
     
     if (type === 'events') {
       const result = await seedSampleEvents()
@@ -13,7 +14,6 @@ export const POST = withAdminAuth(async (request: NextRequest, admin) => {
     }
     
     if (type === 'registrations') {
-      const { eventId } = await request.json()
       if (!eventId) {
         return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
       }

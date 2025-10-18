@@ -46,6 +46,26 @@ function PaymentSuccessInner() {
         } else {
           const errorData = await statusResponse.json().catch(() => ({}))
           console.error('Failed to update payment status:', errorData)
+          
+          // Try force update as fallback
+          try {
+            const forceResponse = await fetch('/api/force-update-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                registration_id: registrationId,
+                payment_id: paymentId
+              })
+            })
+            
+            if (forceResponse.ok) {
+              console.log('Payment status force updated successfully')
+            } else {
+              console.error('Force update also failed')
+            }
+          } catch (forceError) {
+            console.error('Force update error:', forceError)
+          }
         }
         
         // Then, send confirmation email
@@ -64,8 +84,11 @@ function PaymentSuccessInner() {
       }
     }
 
-    // Update payment status and send email after a short delay
-    const emailTimer = setTimeout(updatePaymentStatusAndSendEmail, 2000)
+    // Update payment status and send email immediately (no delay)
+    updatePaymentStatusAndSendEmail()
+    
+    // Also retry after 5 seconds to ensure database is updated
+    const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
 
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
@@ -104,9 +127,9 @@ function PaymentSuccessInner() {
 
     fetchRegistrationData()
 
-    // Cleanup timer
+    // Cleanup timers
     return () => {
-      clearTimeout(emailTimer)
+      clearTimeout(retryTimer)
     }
   }, [paymentId, registrationId])
 
@@ -130,6 +153,26 @@ function PaymentSuccessInner() {
       } else {
         const errorData = await statusResponse.json().catch(() => ({}))
         console.error('Failed to update payment status:', errorData)
+        
+        // Try force update as fallback
+        try {
+          const forceResponse = await fetch('/api/force-update-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              registration_id: registrationId,
+              payment_id: paymentId
+            })
+          })
+          
+          if (forceResponse.ok) {
+            console.log('Payment status force updated successfully')
+          } else {
+            console.error('Force update also failed')
+          }
+        } catch (forceError) {
+          console.error('Force update error:', forceError)
+        }
       }
       
       // Then, send confirmation email

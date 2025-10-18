@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
       case 'success payment':
       case 'success_payment':
       case 'success payment tdr':
+      case 'PAYMENT_SUCCESS_WEBHOOK':
+      case 'ORDER_PAID':
         return await handlePaymentSuccess(event)
       case 'payment_failed_webhook':
       case 'failed payment':
@@ -192,7 +194,11 @@ async function handlePaymentSuccess(event: any) {
     
     return NextResponse.json({ status: 'success' })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to process payment success' }, { status: 500 })
+    console.error('Error in handlePaymentSuccess:', error)
+    return NextResponse.json({ 
+      error: 'Failed to process payment success',
+      details: String(error)
+    }, { status: 500 })
   }
 }
 
