@@ -168,6 +168,19 @@ export async function DELETE(
       // Don't fail the deletion for payment cleanup errors
     }
     
+    // Delete related exports
+    const { error: deleteExportsError } = await supabaseAdmin
+      .from('exports')
+      .delete()
+      .eq('event_id', params.id)
+    
+    if (deleteExportsError) {
+      console.error('Error deleting exports:', deleteExportsError)
+      // Don't fail the deletion for export cleanup errors
+    } else {
+      console.log('✅ Exports deleted successfully')
+    }
+    
     // Now delete the event
     const { error: deleteEventError } = await supabaseAdmin
       .from('events')
