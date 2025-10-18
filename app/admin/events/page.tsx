@@ -218,14 +218,22 @@ export default function AdminEventsPage() {
     setShowForm(true)
   }
 
-  const handleDelete = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return
+  const handleDelete = async (eventId: string, forceDelete = false) => {
+    const confirmMessage = forceDelete 
+      ? '⚠️ WARNING: This event has paid registrations. Force deleting will remove all data without refunds. Are you absolutely sure?'
+      : 'Are you sure you want to delete this event?'
+    
+    if (!confirm(confirmMessage)) return
 
     const token = getAdminToken()
     if (!token) return
 
     try {
-      const response = await fetch(`/api/admin/events/${eventId}`, {
+      const url = forceDelete 
+        ? `/api/admin/events/${eventId}?force=true`
+        : `/api/admin/events/${eventId}`
+        
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -238,7 +246,14 @@ export default function AdminEventsPage() {
         await fetchEvents(token)
         alert(data.message || 'Event deleted successfully!')
       } else {
-        alert(data.details || data.error || 'Failed to delete event')
+        if (data.forceDeleteAvailable) {
+          const forceConfirm = confirm(`${data.details}\n\nDo you want to force delete anyway? (This will remove all data without refunds)`)
+          if (forceConfirm) {
+            await handleDelete(eventId, true)
+          }
+        } else {
+          alert(data.details || data.error || 'Failed to delete event')
+        }
       }
     } catch (error) {
       alert('Network error')

@@ -123,10 +123,19 @@ export async function DELETE(
       // Check if any registrations are paid
       const paidRegistrations = registrations.filter(reg => reg.status === 'paid')
       if (paidRegistrations.length > 0) {
-        return NextResponse.json({ 
-          error: 'Cannot delete event with paid registrations', 
-          details: `This event has ${paidRegistrations.length} paid registration(s). Please contact support to handle refunds before deletion.` 
-        }, { status: 400 })
+        // Check if this is a force delete request
+        const url = new URL(request.url)
+        const forceDelete = url.searchParams.get('force') === 'true'
+        
+        if (!forceDelete) {
+          return NextResponse.json({ 
+            error: 'Cannot delete event with paid registrations', 
+            details: `This event has ${paidRegistrations.length} paid registration(s). Please contact support to handle refunds before deletion.`,
+            forceDeleteAvailable: true
+          }, { status: 400 })
+        }
+        
+        console.log(`[Delete Event] Force deleting event with ${paidRegistrations.length} paid registrations`)
       }
       
       // Delete unpaid registrations first
