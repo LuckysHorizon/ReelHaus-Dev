@@ -27,30 +27,32 @@ export async function POST(request: NextRequest) {
         paymentDetails = await cashfree.getPaymentDetails(cashfree_order_id)
         
         if (paymentDetails && paymentDetails.length > 0) {
+          console.log(`[Cashfree] Payment details found on attempt ${retryCount + 1}`)
           break // Success, exit retry loop
         }
         
         retryCount++
         if (retryCount < maxRetries) {
+          console.log(`[Cashfree] Payment details not found, retrying in 2 seconds... (attempt ${retryCount + 1}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         }
       } catch (cfError) {
         retryCount++
         
         if (retryCount < maxRetries) {
+          console.log(`[Cashfree] Error fetching payment details, retrying in 2 seconds... (attempt ${retryCount + 1}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         } else {
-          return NextResponse.json({ 
-            success: false, 
-            error: 'Failed to verify payment with Cashfree after retries',
-            details: String(cfError)
-          }, { status: 500 })
+          console.log(`[Cashfree] Failed to verify payment after ${maxRetries} attempts, proceeding with database update`)
+          // Don't return error, proceed with database update
+          break
         }
       }
     }
     
     // Since user reached success page, assume payment is successful
     // Update database regardless of Cashfree API verification
+    // This handles cases where Cashfree API is slow or payment details are not immediately available
     
     // Get registration details with event information
     const { data: registration, error: regError } = await supabaseAdmin

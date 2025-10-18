@@ -212,6 +212,11 @@ class CashfreeSDK {
       })
 
       if (!response.ok) {
+        // If payment details are not found, it might mean the payment is still processing
+        if (response.status === 404) {
+          console.log(`[Cashfree] Payment details not found for order ${orderId} - payment may still be processing`)
+          return null
+        }
         throw new Error(`Failed to fetch payment details: ${response.statusText}`)
       }
 
