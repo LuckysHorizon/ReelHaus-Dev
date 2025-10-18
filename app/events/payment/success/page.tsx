@@ -33,11 +33,14 @@ function PaymentSuccessInner() {
     const updatePaymentStatusAndSendEmail = async () => {
       try {
         // First, try to verify payment with Cashfree
+        // Get the order ID from payment data or use a fallback
+        const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
+        
         const verifyResponse = await fetch('/api/payments/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            cashfree_order_id: paymentData?.cashfree_order_id || '',
+            cashfree_order_id: orderId,
             cashfree_payment_id: paymentId || '',
             registration_id: registrationId
           })
@@ -104,8 +107,8 @@ function PaymentSuccessInner() {
       }
     }
 
-    // Update payment status and send email immediately (no delay)
-    updatePaymentStatusAndSendEmail()
+    // Update payment status and send email after a short delay to ensure payment data is fetched
+    setTimeout(updatePaymentStatusAndSendEmail, 1000)
     
     // Also retry after 5 seconds to ensure database is updated
     const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
@@ -173,11 +176,14 @@ function PaymentSuccessInner() {
     setSendingEmail(true)
     try {
       // First, try to verify payment with Cashfree
+      // Get the order ID from payment data or use a fallback
+      const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
+      
       const verifyResponse = await fetch('/api/payments/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cashfree_order_id: paymentData?.cashfree_order_id || '',
+          cashfree_order_id: orderId,
           cashfree_payment_id: paymentId || '',
           registration_id: registrationId
         })

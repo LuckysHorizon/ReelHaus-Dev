@@ -202,6 +202,8 @@ class CashfreeSDK {
     const url = `${this.baseURL}/orders/${orderId}/payments`
     
     try {
+      console.log(`[Cashfree] Fetching payment details for order: ${orderId}`)
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -221,6 +223,7 @@ class CashfreeSDK {
       }
 
       const data = await response.json()
+      console.log(`[Cashfree] Payment details found:`, data)
       return data
     } catch (error) {
       console.error('Cashfree getPaymentDetails error:', error)
