@@ -28,26 +28,41 @@ function PaymentSuccessInner() {
       return
     }
 
-    // Automatically send email if not already sent
-    const sendEmailIfNeeded = async () => {
+    // Automatically update payment status and send email
+    const updatePaymentStatusAndSendEmail = async () => {
       try {
-        const response = await fetch('/api/send-confirmation-registration', {
+        // First, update payment status in database
+        const statusResponse = await fetch('/api/payments/update-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            registration_id: registrationId,
+            payment_id: paymentId
+          })
+        })
+        
+        if (statusResponse.ok) {
+          console.log('Payment status updated successfully')
+        }
+        
+        // Then, send confirmation email
+        const emailResponse = await fetch('/api/send-confirmation-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ registration_id: registrationId })
         })
         
-        if (response.ok) {
+        if (emailResponse.ok) {
           setEmailSent(true)
           console.log('Confirmation email sent automatically')
         }
       } catch (error) {
-        console.error('Failed to send automatic email:', error)
+        console.error('Failed to update payment status or send email:', error)
       }
     }
 
-    // Send email after a short delay to ensure page is loaded
-    const emailTimer = setTimeout(sendEmailIfNeeded, 2000)
+    // Update payment status and send email after a short delay
+    const emailTimer = setTimeout(updatePaymentStatusAndSendEmail, 2000)
 
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
@@ -97,6 +112,21 @@ function PaymentSuccessInner() {
     
     setSendingEmail(true)
     try {
+      // First, ensure payment status is updated
+      const statusResponse = await fetch('/api/payments/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          registration_id: registrationId,
+          payment_id: paymentId
+        })
+      })
+      
+      if (statusResponse.ok) {
+        console.log('Payment status updated successfully')
+      }
+      
+      // Then, send confirmation email
       const response = await fetch('/api/send-confirmation-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
