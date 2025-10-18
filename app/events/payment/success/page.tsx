@@ -36,6 +36,13 @@ function PaymentSuccessInner() {
         // Get the order ID from payment data or use a fallback
         const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
         
+        console.log('[Success Page] Attempting payment verification with:', {
+          orderId,
+          paymentId,
+          registrationId,
+          paymentData
+        })
+        
         const verifyResponse = await fetch('/api/payments/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -119,7 +126,10 @@ function PaymentSuccessInner() {
         const response = await fetch(`/api/payments/${registrationId}`)
         if (response.ok) {
           const data = await response.json()
+          console.log('[Success Page] Payment data fetched:', data)
           setPaymentData(data)
+        } else {
+          console.error('[Success Page] Failed to fetch payment data:', response.status)
         }
       } catch (error) {
         console.error('Error fetching payment data:', error)
@@ -178,6 +188,13 @@ function PaymentSuccessInner() {
       // First, try to verify payment with Cashfree
       // Get the order ID from payment data or use a fallback
       const orderId = paymentData?.cashfree_order_id || paymentData?.order_id || ''
+      
+      console.log('[Manual Resend] Attempting payment verification with:', {
+        orderId,
+        paymentId,
+        registrationId,
+        paymentData
+      })
       
       const verifyResponse = await fetch('/api/payments/verify', {
         method: 'POST',

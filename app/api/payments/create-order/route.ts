@@ -93,6 +93,8 @@ export async function POST(request: NextRequest) {
     // Generate unique order ID for Cashfree
     const orderId = `ORDER_${registration.id}_${Date.now()}`
     
+    console.log('[Create Order] Generated order ID:', orderId)
+    
     // Create Cashfree order
     let cashfreeOrder
     try {
@@ -119,12 +121,14 @@ export async function POST(request: NextRequest) {
     }
     
     // Create payment record
+    console.log('[Create Order] Storing payment record with order ID:', orderId)
+    
     const { error: paymentError } = await supabaseAdmin
       .from('payments')
       .insert({
         registration_id: registration.id,
         provider: 'cashfree',
-        provider_order_id: cashfreeOrder.cf_order_id,
+        provider_order_id: orderId, // Use the orderId we generated, not cf_order_id
         amount_cents: amount,
         currency: event.currency,
         status: 'initiated'

@@ -40,10 +40,18 @@ export async function GET(
     const registration = paymentData.registrations
     const event = registration.events
 
+    console.log('[Payment Data API] Raw payment data:', {
+      id: paymentData.id,
+      provider_order_id: paymentData.provider_order_id,
+      provider_payment_id: paymentData.provider_payment_id,
+      status: paymentData.status,
+      amount_cents: paymentData.amount_cents
+    })
+
     return NextResponse.json({
       registration_id: registration.id,
-      cashfree_order_id: paymentData.provider_order_id,
-      cashfree_payment_session_id: paymentData.provider_payment_id || '', // This will be set after order creation
+      cashfree_order_id: paymentData.provider_order_id || '',
+      cashfree_payment_session_id: paymentData.provider_payment_id || '',
       cashfree_order_token: '', // This will be set after order creation
       amount: paymentData.amount_cents / 100, // Convert cents to rupees
       currency: event.currency,
