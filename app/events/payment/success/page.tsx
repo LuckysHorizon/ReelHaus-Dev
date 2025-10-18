@@ -131,31 +131,33 @@ function PaymentSuccessInner() {
 
     // Fetch payment data first, then update payment status
     const fetchDataAndUpdate = async () => {
-      await fetchPaymentData()
-      // Wait a bit for payment data to be set
-      setTimeout(updatePaymentStatusAndSendEmail, 500)
-    }
-    
-    fetchDataAndUpdate()
-    
-    // Also retry after 5 seconds to ensure database is updated
-    const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
-
-    // Fetch payment data from API
-    const fetchPaymentData = async () => {
       try {
         const response = await fetch(`/api/payments/${registrationId}`)
         if (response.ok) {
           const data = await response.json()
           console.log('[Success Page] Payment data fetched:', data)
           setPaymentData(data)
+          
+          // Now call the update function with the fetched data
+          setTimeout(() => {
+            updatePaymentStatusAndSendEmail()
+          }, 100)
         } else {
           console.error('[Success Page] Failed to fetch payment data:', response.status)
+          // Still try to update without payment data
+          updatePaymentStatusAndSendEmail()
         }
       } catch (error) {
         console.error('Error fetching payment data:', error)
+        // Still try to update without payment data
+        updatePaymentStatusAndSendEmail()
       }
     }
+    
+    fetchDataAndUpdate()
+    
+    // Also retry after 5 seconds to ensure database is updated
+    const retryTimer = setTimeout(updatePaymentStatusAndSendEmail, 5000)
 
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
@@ -192,7 +194,6 @@ function PaymentSuccessInner() {
       }
     }
 
-    fetchPaymentData()
     fetchRegistrationData()
 
     // Cleanup timers

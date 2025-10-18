@@ -14,8 +14,13 @@ import { sendEmailsToAllAttendees } from '@/lib/resend'
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Cashfree Webhook] Received webhook request')
+    
     const body = await request.text()
     const signature = request.headers.get('x-webhook-signature')
+    
+    console.log('[Cashfree Webhook] Signature present:', !!signature)
+    console.log('[Cashfree Webhook] Body length:', body.length)
     
     if (!signature) {
       console.error('Missing Cashfree webhook signature')
@@ -37,6 +42,10 @@ export async function POST(request: NextRequest) {
     const rawType: string | undefined = event.type || event.event || event?.data?.event
     const eventType = (rawType || '').toString().trim().toLowerCase()
     const orderId = event.data?.order?.order_id || event.data?.order_id
+    
+    console.log('[Cashfree Webhook] Event type:', eventType)
+    console.log('[Cashfree Webhook] Order ID:', orderId)
+    console.log('[Cashfree Webhook] Event data:', JSON.stringify(event, null, 2))
     
     // Handle different event types
     switch (eventType) {
