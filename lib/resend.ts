@@ -30,7 +30,6 @@ export async function sendEmailsToAllAttendees(params: {
   const { mainRegistrant, ticketDetails, eventName, eventDate, eventTime, eventLocation, paymentId } = params
 
   // Send email to main registrant
-  console.log(`Sending confirmation email to main registrant: ${mainRegistrant.email}`)
   await sendPaymentConfirmationEmail({
     email: mainRegistrant.email,
     name: mainRegistrant.name,
@@ -49,7 +48,6 @@ export async function sendEmailsToAllAttendees(params: {
   if (ticketDetails && ticketDetails.length > 0) {
     for (const attendee of ticketDetails) {
       if (attendee.email && attendee.email.trim() !== '') {
-        console.log(`Sending confirmation email to additional attendee: ${attendee.email}`)
         await sendPaymentConfirmationEmail({
           email: attendee.email,
           name: attendee.name,
@@ -96,7 +94,6 @@ export async function sendPaymentConfirmationEmail(params: {
     rollNumber = 'N/A'
   } = params
 
-  console.log(`Sending confirmation email to: ${email} for event: ${eventName}`)
 
   try {
     const result = await resendClient.emails.send({

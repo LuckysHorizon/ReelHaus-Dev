@@ -185,7 +185,8 @@ async function handlePaymentSuccess(event: any) {
         eventLocation: 'TBD', // Add venue field to events table if needed
         paymentId: payment.cf_payment_id,
       }).catch((emailError) => {
-        // Don't fail the webhook if email fails
+        // Log error but don't fail the webhook
+        console.error('Webhook email sending failed:', emailError)
       })
     }
     

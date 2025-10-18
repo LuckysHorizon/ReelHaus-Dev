@@ -18,6 +18,8 @@ function PaymentSuccessInner() {
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [retryCount, setRetryCount] = useState(0)
+  const [emailSent, setEmailSent] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
   
 
   useEffect(() => {
@@ -25,6 +27,27 @@ function PaymentSuccessInner() {
       setLoading(false)
       return
     }
+
+    // Automatically send email if not already sent
+    const sendEmailIfNeeded = async () => {
+      try {
+        const response = await fetch('/api/send-confirmation-registration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ registration_id: registrationId })
+        })
+        
+        if (response.ok) {
+          setEmailSent(true)
+          console.log('Confirmation email sent automatically')
+        }
+      } catch (error) {
+        console.error('Failed to send automatic email:', error)
+      }
+    }
+
+    // Send email after a short delay to ensure page is loaded
+    const emailTimer = setTimeout(sendEmailIfNeeded, 2000)
 
     // Fetch registration data from API
     const fetchRegistrationData = async () => {
@@ -62,8 +85,36 @@ function PaymentSuccessInner() {
     }
 
     fetchRegistrationData()
+
+    // Cleanup timer
+    return () => {
+      clearTimeout(emailTimer)
+    }
   }, [paymentId, registrationId])
 
+  const sendEmailManually = async () => {
+    if (!registrationId || sendingEmail) return
+    
+    setSendingEmail(true)
+    try {
+      const response = await fetch('/api/send-confirmation-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registration_id: registrationId })
+      })
+      
+      if (response.ok) {
+        setEmailSent(true)
+        console.log('Email sent successfully')
+      } else {
+        console.error('Failed to send email')
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+    } finally {
+      setSendingEmail(false)
+    }
+  }
 
   
 
@@ -220,9 +271,21 @@ function PaymentSuccessInner() {
                   <Mail className="h-6 w-6 text-red-400" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">Email Confirmation</h3>
-                <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                <p className="text-sm text-gray-400 max-w-xs mx-auto mb-3">
                   A confirmation email with your ticket details has been sent to {registrationData?.email || 'your registered email'}
                 </p>
+                {!emailSent && (
+                  <button
+                    onClick={sendEmailManually}
+                    disabled={sendingEmail}
+                    className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-full border border-red-500/30 transition-colors disabled:opacity-50"
+                  >
+                    {sendingEmail ? 'Sending...' : 'Resend Email'}
+                  </button>
+                )}
+                {emailSent && (
+                  <p className="text-xs text-green-400">✓ Email sent successfully!</p>
+                )}
               </div>
               <div className="text-center px-2">
                 <div className="bg-red-500/15 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">

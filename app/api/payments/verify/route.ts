@@ -172,9 +172,13 @@ export async function POST(request: NextRequest) {
           paymentId: cashfree_payment_id,
         })
       } catch (emailError) {
-        // Don't fail the payment verification if email fails
+        // Return error details for debugging
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Email sending failed',
+          emailError: String(emailError)
+        }, { status: 500 })
       }
-    } else {
     }
 
     return NextResponse.json({
