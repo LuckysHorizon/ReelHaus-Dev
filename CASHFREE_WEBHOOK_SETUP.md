@@ -59,6 +59,12 @@ curl -X POST https://yourdomain.com/api/test-webhook-cashfree \
 - ✅ Verify webhook events are subscribed in dashboard
 - ✅ Check server logs for signature verification errors
 
+### 307 TEMPORARY_REDIRECT Error
+- ✅ **Root Cause**: Webhook hitting frontend route instead of API route
+- ✅ **Solution**: Use Pages Router webhook (`pages/api/webhooks/cashfree.js`)
+- ✅ **Check**: Ensure no conflicting App Router webhook exists
+- ✅ **Verify**: Test endpoint returns 200 OK, not HTML or redirect
+
 ### Database Not Updating
 - ✅ Check webhook signature verification (uses timestamp + rawBody)
 - ✅ Verify CASHFREE_SECRET_KEY matches your API credentials
@@ -81,12 +87,14 @@ curl -X POST https://yourdomain.com/api/test-webhook-cashfree \
 
 ## Key Fixes Applied
 
-1. **Fixed webhook signature verification** - Now uses `timestamp + rawBody` with `CASHFREE_SECRET_KEY`
-2. **Added raw body handling** - Required for signature verification
-3. **Updated payload parsing** - Handles exact Cashfree webhook structure
-4. **Simplified success page** - Relies on webhook for database updates
-5. **Added comprehensive logging** - For debugging webhook issues
-6. **Created test endpoint** - For testing webhook logic without real payments
+1. **Fixed 307 TEMPORARY_REDIRECT error** - Created Pages Router webhook (`pages/api/webhooks/cashfree.js`)
+2. **Fixed webhook signature verification** - Now uses `timestamp + rawBody` with `CASHFREE_SECRET_KEY`
+3. **Added raw body handling** - Required for signature verification
+4. **Updated payload parsing** - Handles exact Cashfree webhook structure
+5. **Removed conflicting routes** - Deleted App Router webhook to avoid conflicts
+6. **Simplified success page** - Relies on webhook for database updates
+7. **Added comprehensive logging** - For debugging webhook issues
+8. **Created test endpoint** - For testing webhook logic without real payments
 
 ## Signature Verification Formula
 
