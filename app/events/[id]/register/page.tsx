@@ -61,7 +61,7 @@ export default function EventRegistrationPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch(`/api/events?id=${params.id}`)
+        const response = await fetch(`/api/events?id=${params?.id}`)
         
         if (response.ok) {
           const data = await response.json()
@@ -91,13 +91,13 @@ export default function EventRegistrationPage() {
       }
     }
 
-    if (params.id) {
+    if (params?.id) {
       fetchEvent()
     } else {
       setError('Invalid event ID')
       setLoading(false)
     }
-  }, [params.id])
+  }, [params?.id])
 
   // Preload Cashfree SDK on any /events/*/register route so checkout opens reliably
   useEffect(() => {
@@ -261,8 +261,21 @@ export default function EventRegistrationPage() {
                   router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}`)
                 } else {
                   console.error('Payment verification failed:', verifyJson)
-                  // Still redirect to success page - success page will handle database update
-                  router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${data.registration_id}&pending_verification=true`)
+                  
+                  // Handle different failure scenarios
+                  const status = verifyJson?.status || 'verification_failed'
+                  const paymentStatus = verifyJson?.payment_status || 'unknown'
+                  
+                  if (status === 'failed' || paymentStatus === 'failed' || paymentStatus === 'cancelled' || paymentStatus === 'expired') {
+                    // Payment failed - redirect to failure page
+                    router.push(`/events/payment/failure?status=failure&reason=payment_failed&payment_id=${paymentId}&registration_id=${data.registration_id}`)
+                  } else if (status === 'pending' || paymentStatus === 'pending') {
+                    // Payment pending - redirect to failure page with pending reason
+                    router.push(`/events/payment/failure?status=pending&reason=payment_pending&payment_id=${paymentId}&registration_id=${data.registration_id}`)
+                  } else {
+                    // Verification failed or other issues - redirect to failure page
+                    router.push(`/events/payment/failure?status=failure&reason=verification_failed&payment_id=${paymentId}&registration_id=${data.registration_id}`)
+                  }
                 }
               } catch (verifyError) {
                 const reason = encodeURIComponent('network_error')

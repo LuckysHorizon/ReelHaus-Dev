@@ -25,7 +25,7 @@ interface PaymentData {
 
 function PaymentPageInner() {
   const searchParams = useSearchParams()
-  const registrationId = searchParams.get('registration_id')
+  const registrationId = searchParams?.get('registration_id')
   
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -81,13 +81,14 @@ function PaymentPageInner() {
         
         cashfree.checkout(checkoutOptions)
           .then((response: any) => {
-            // Payment successful
+            // Payment successful - redirect to verification
             window.location.href = `/events/payment/success?payment_id=${response.cf_payment_id}&registration_id=${paymentData.registration_id}`
           })
           .catch((error: any) => {
             console.error('Payment failed:', error)
-            setError('Payment failed. Please try again.')
-            setProcessing(false)
+            // Payment failed - redirect to failure page
+            const reason = encodeURIComponent('payment_failed')
+            window.location.href = `/events/payment/failure?status=failure&reason=${reason}&registration_id=${paymentData.registration_id}`
           })
       }
       script.onerror = () => {

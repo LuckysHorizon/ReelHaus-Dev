@@ -43,16 +43,59 @@ export async function POST(request: NextRequest) {
           console.log(`[Cashfree] Error fetching payment details, retrying in 2 seconds... (attempt ${retryCount + 1}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, 2000))
         } else {
-          console.log(`[Cashfree] Failed to verify payment after ${maxRetries} attempts, proceeding with database update`)
-          // Don't return error, proceed with database update
-          break
+          console.log(`[Cashfree] Failed to verify payment after ${maxRetries} attempts`)
+          return NextResponse.json({ 
+            success: false, 
+            error: 'Payment verification failed',
+            status: 'verification_failed'
+          }, { status: 400 })
         }
       }
     }
     
-    // Since user reached success page, assume payment is successful
-    // Update database regardless of Cashfree API verification
-    // This handles cases where Cashfree API is slow or payment details are not immediately available
+    // Check actual payment status from Cashfree
+    if (!paymentDetails || paymentDetails.length === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment details not found',
+        status: 'not_found'
+      }, { status: 404 })
+    }
+    
+    const payment = paymentDetails[0] // Get the first payment
+    const paymentStatus = payment.payment_status?.toLowerCase()
+    
+    console.log(`[Cashfree] Payment status: ${paymentStatus}`)
+    
+    // Handle different payment statuses
+    if (paymentStatus === 'failed' || paymentStatus === 'cancelled' || paymentStatus === 'expired') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment failed',
+        status: 'failed',
+        payment_status: paymentStatus
+      }, { status: 400 })
+    }
+    
+    if (paymentStatus === 'pending') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment is still pending',
+        status: 'pending',
+        payment_status: paymentStatus
+      }, { status: 400 })
+    }
+    
+    if (paymentStatus !== 'success') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Payment not successful',
+        status: 'unsuccessful',
+        payment_status: paymentStatus
+      }, { status: 400 })
+    }
+    
+    // Only proceed if payment is actually successful
     
     // Get registration details with event information
     const { data: registration, error: regError } = await supabaseAdmin
