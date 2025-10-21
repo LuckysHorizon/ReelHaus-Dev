@@ -23,47 +23,44 @@ function PaymentVerificationInner() {
       }
 
       try {
-        // Get payment record to find the order ID
+        // Wait a moment for webhook to process (if it hasn't already)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+
+        // Check payment status from database (webhook should have updated this)
         const paymentResponse = await fetch(`/api/payments/${registrationId}`)
         if (!paymentResponse.ok) {
           throw new Error('Failed to fetch payment details')
         }
         
         const paymentData = await paymentResponse.json()
-        if (!paymentData.payment) {
-          throw new Error('Payment record not found')
-        }
-
-        const orderId = paymentData.payment.provider_order_id
         
-        // Verify payment status with Cashfree
-        const verifyResponse = await fetch('/api/payments/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cashfree_order_id: orderId,
-            cashfree_payment_id: paymentId || 'unknown',
-            registration_id: registrationId
-          })
+        // Check registration status
+        const registrationResponse = await fetch(`/api/registrations/${registrationId}`)
+        if (!registrationResponse.ok) {
+          throw new Error('Failed to fetch registration details')
+        }
+        
+        const registrationData = await registrationResponse.json()
+        
+        console.log('Payment verification data:', {
+          payment: paymentData,
+          registration: registrationData
         })
 
-        const verifyResult = await verifyResponse.json()
-        
-        if (verifyResponse.ok && verifyResult.success) {
+        // Check if payment is successful based on database status
+        if (registrationData.status === 'paid' && paymentData.cashfree_order_id) {
           // Payment successful - redirect to success page
           router.push(`/events/payment/success?status=success&payment_id=${paymentId}&registration_id=${registrationId}`)
+        } else if (registrationData.status === 'payment_initiated') {
+          // Payment still processing - wait a bit more and retry
+          console.log('Payment still processing, waiting for webhook...')
+          setTimeout(() => {
+            window.location.reload() // Reload to check again
+          }, 3000)
         } else {
-          // Payment failed/pending - redirect to failure page
-          const status = verifyResult.status || 'verification_failed'
-          const paymentStatus = verifyResult.payment_status || 'unknown'
-          
-          if (status === 'failed' || paymentStatus === 'failed' || paymentStatus === 'cancelled' || paymentStatus === 'expired') {
-            router.push(`/events/payment/failure?status=failure&reason=payment_failed&payment_id=${paymentId}&registration_id=${registrationId}`)
-          } else if (status === 'pending' || paymentStatus === 'pending') {
-            router.push(`/events/payment/failure?status=pending&reason=payment_pending&payment_id=${paymentId}&registration_id=${registrationId}`)
-          } else {
-            router.push(`/events/payment/failure?status=failure&reason=verification_failed&payment_id=${paymentId}&registration_id=${registrationId}`)
-          }
+          // Payment failed or other status - redirect to failure page
+          const reason = encodeURIComponent('payment_not_successful')
+          router.push(`/events/payment/failure?status=failure&reason=${reason}&payment_id=${paymentId}&registration_id=${registrationId}`)
         }
       } catch (error) {
         console.error('Payment verification error:', error)

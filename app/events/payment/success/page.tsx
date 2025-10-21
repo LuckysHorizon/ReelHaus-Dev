@@ -34,23 +34,19 @@ function PaymentSuccessInner() {
     // If webhook fails, we have a fallback mechanism
     const checkPaymentStatus = async () => {
       try {
-        // First check payment status to ensure it's actually successful
-        const paymentResponse = await fetch(`/api/payments/${registrationId}`)
-        if (paymentResponse.ok) {
-          const paymentData = await paymentResponse.json()
-          if (paymentData.payment && paymentData.payment.status !== 'succeeded') {
+        // Check registration status from database (webhook should have updated this)
+        const response = await fetch(`/api/registrations/${registrationId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setRegistrationData(data)
+          
+          // Check if payment is actually successful
+          if (data.status !== 'paid') {
             // Payment not successful - redirect to failure page
             const reason = encodeURIComponent('payment_not_successful')
             window.location.href = `/events/payment/failure?status=failure&reason=${reason}&registration_id=${registrationId}`
             return
           }
-        }
-
-        // Check if payment is already processed by webhook
-        const response = await fetch(`/api/registrations/${registrationId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setRegistrationData(data)
           
           // If payment is already processed, mark email as sent
           if (data.status === 'paid') {
