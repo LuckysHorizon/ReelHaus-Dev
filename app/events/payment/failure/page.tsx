@@ -16,7 +16,7 @@ function PaymentFailureInner() {
 
   const getFailureMessage = () => {
     switch (reason) {
-      case 'payment_failed':
+      case 'payment_not_successful':
         return 'Your payment was not successful. Please try again with a different payment method.'
       case 'payment_pending':
         return 'Your payment is still being processed. Please wait a few minutes and check your email for updates.'

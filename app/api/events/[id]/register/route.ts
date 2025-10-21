@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         customerPhone: validatedData.phone
       },
       orderMeta: {
-        returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/events/payment/success?registration_id=${registration.id}`,
+        returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/events/payment/verify?registration_id=${registration.id}`,
         notifyUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/cashfree`,
         paymentMethods: 'cc,dc,upi,nb,paylater'
       }

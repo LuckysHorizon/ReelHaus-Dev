@@ -10,10 +10,10 @@ import { useSearchParams } from "next/navigation"
 
 function PaymentSuccessInner() {
   const searchParams = useSearchParams()
-  const paymentId = searchParams.get('payment_id')
-  const registrationId = searchParams.get('registration_id')
-  const status = searchParams.get('status')
-  const pendingVerification = searchParams.get('pending_verification')
+  const paymentId = searchParams?.get('payment_id')
+  const registrationId = searchParams?.get('registration_id')
+  const status = searchParams?.get('status')
+  const pendingVerification = searchParams?.get('pending_verification')
   
   const [registrationData, setRegistrationData] = useState<any>(null)
   const [paymentData, setPaymentData] = useState<any>(null)
@@ -34,6 +34,18 @@ function PaymentSuccessInner() {
     // If webhook fails, we have a fallback mechanism
     const checkPaymentStatus = async () => {
       try {
+        // First check payment status to ensure it's actually successful
+        const paymentResponse = await fetch(`/api/payments/${registrationId}`)
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json()
+          if (paymentData.payment && paymentData.payment.status !== 'succeeded') {
+            // Payment not successful - redirect to failure page
+            const reason = encodeURIComponent('payment_not_successful')
+            window.location.href = `/events/payment/failure?status=failure&reason=${reason}&registration_id=${registrationId}`
+            return
+          }
+        }
+
         // Check if payment is already processed by webhook
         const response = await fetch(`/api/registrations/${registrationId}`)
         if (response.ok) {
